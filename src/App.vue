@@ -1,25 +1,50 @@
-<template>
-  <div id="app">
-    <div id="nav">
-      <router-link to="/">Home</router-link> |
-      <router-link to="/about">About</router-link>
-    </div>
-    <router-view/>
-  </div>
-</template>
 <style lang="stylus">
-#app
-  font-family 'Avenir', Helvetica, Arial, sans-serif
-  -webkit-font-smoothing antialiased
-  -moz-osx-font-smoothing grayscale
-  text-align center
-  color #2c3e50
-
-#nav
-  padding 30px
-  a
-    font-weight bold
-    color #2c3e50
-    &.router-link-exact-active
-      color #42b983
 </style>
+<template lang="pug">
+  div(id="root-view")
+    el-container(style="height: 100%")
+      el-aside(width="200px" style="height: 100%")
+        Aside(:menus="menus")
+      el-container()
+        el-header#root-header
+            Header()
+        el-main(style="padding: 0")
+            el-scrollbar(style="height:100%;" class="fpi-scroll")
+                router-view(id="root-main")
+</template>
+<script lang="ts">
+  import "@/styles/app.styl";
+  import "@/styles/yf.styl";
+  import { Component, Vue } from 'vue-property-decorator';
+  import Aside from '@/components/aside/Index.vue';
+  import Header from '@/components/header/Index.vue';
+  import {data} from "@/components/aside/nav";
+  @Component({
+    components: {
+      Aside,
+      Header,
+    },
+  })
+  export default class App extends Vue {
+    public data() {
+      return {
+        menus: data.list,
+      };
+    }
+    private created() {
+      console.log('app组价初始化');
+    }
+  }
+</script>
+<style lang="stylus" scoped>
+    .fade-enter-active .fade-leave-active
+        transition opacity .5s
+    .fade-enter .fade-leave-active
+        opacity 0
+
+    .transitionRouter-enter-active .transitionRouter-leave-active
+        transition all 0.4s
+    .transitionRouter-enter .transitionRouter-leave
+        transform translate3d(100%, 0, 0)
+</style>
+

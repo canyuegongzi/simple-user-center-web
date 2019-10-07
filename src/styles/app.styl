@@ -1,0 +1,128 @@
+@import './el-reset.styl'
+/* ***************************
+ *        字体设置            *
+* ************************* */
+@font-face
+    font-family fzzh
+    src url('./fangzheng.otf') format('opentype')
+body
+    background-color #ffffff !important
+    -o-user-select: none
+    -moz-user-select none
+    -webkit-user-select none
+    -ms-user-select none
+    -khtml-user-select none
+    user-select none
+#root-view
+    min-width 1264px
+    height 100%
+    display flex
+    flex-direction column
+    #root-header
+        z-index 999
+        width calc(100% + 1px)
+        margin-left -1px
+        background #19202e
+        color #ffffff
+        height 48px !important
+        &.absolute
+            header
+                background rgb(240, 246, 246)
+                box-shadow 0 2px 3px 0 rgba(0, 0, 0, 0.3)
+        header
+            // background-color #192a3f
+            height 32px
+            background-size cover
+            padding 0 20px 0 16px
+            .logo
+                font-size 16px
+                color #fff
+                font-family fzzh
+                img
+                    height 20px
+            .has-group
+                .el-menu
+                    display flex
+        .up-right
+            width 228px
+            display flex
+            justify-content flex-end
+            > div
+                margin-right 12px
+            .red-dot
+                color white
+                background-color #F58F23
+                border-radius 50%
+                width 22px
+                height 22px
+                line-height 22px
+                text-align center
+            .avatar
+                width 24px
+                height 24px
+                border-radius 50%
+    #root-main
+        flex-grow 1
+        &:not(.mg0)
+            margin 0 16px 16px 16px
+    > footer
+        height 60px
+        background-color black
+        color white
+        line-height 60px
+        padding-left 12px
+        text-align center
+.el-submenu__icon-arrow
+    font-size 6px !important
+.el-select-dropdown.el-popper
+    .popper__arrow
+        left 50% !important
+//区域网格流域站点切换
+.tree-types
+    .el-radio-button__inner
+        color #303133
+        font-size 12px
+        min-width 56px !important
+    .el-radio-button
+        &:last-child
+            .el-radio-button__inner
+                border-radius 0 2px 2px 0
+        &:first-child
+            .el-radio-button__inner
+                border-radius 2px 0 0 2px
+        &.is-active
+            .el-radio-button__inner
+                color #FFFFFF
+//树
+.fpi-tree
+    height 100%
+    background #FFFFFF
+    border-radius 4px
+//select
+.el-select
+    width 144px
+    .el-input__inner
+        border-radius 2px
+        color #303133
+        padding 0 32px 0 8px
+    .el-input__suffix
+        width 32px
+.el-date-editor
+    .el-input__inner
+        border-radius 2px
+        color #303133
+.evaluationTip
+    word-break keep-all
+// 导航的二级样式
+.el-menu--popup-bottom-start
+    // background-image linear-gradient(180deg, rgba(0,0,0,0.20) 0%, rgba(0,0,0,0.05) 100%) !important
+    background-size  cover
+.el-table 
+    >>>th 
+        .cell 
+            font-size 12px 
+.el-popover
+    height 320px !important
+.el-dialog__body
+      padding 0 20px !important
+
