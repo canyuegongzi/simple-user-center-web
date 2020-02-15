@@ -8,4 +8,6 @@ export default class AuthInfo {
   public parentId?: string | number = '';
   public parentName?: string  = '';
   public system?: string = '';
+  public value?: string = '';
+  public isRoot?: number = 1;
 }

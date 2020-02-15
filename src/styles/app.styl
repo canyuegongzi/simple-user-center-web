@@ -14,7 +14,7 @@ body
     -khtml-user-select none
     user-select none
 #root-view
-    min-width 1264px
+    min-width 960px
     height 100%
     display flex
     flex-direction column
@@ -117,12 +117,31 @@ body
 .el-menu--popup-bottom-start
     // background-image linear-gradient(180deg, rgba(0,0,0,0.20) 0%, rgba(0,0,0,0.05) 100%) !important
     background-size  cover
-.el-table 
-    >>>th 
-        .cell 
-            font-size 12px 
+.el-table
+    >>>th
+        .cell
+            font-size 12px
 .el-popover
     height 320px !important
 .el-dialog__body
       padding 0 20px !important
+.elTreeSelectClass
+    .el-select
+        width 100% !important
+        height 100% !important
+        .el-input
+            height 100% !important
+            .el-input__inner
+                height 100%
+                font-size 12px
+            .el-input__suffix
+                top 10px !important
+.el-input__inner
+    height 28px !important
+    font-size 12px
+.password
+    .el-scrollbar__wrap
+        overflow-x hidden !important
+.el-form-item
+    margin-bottom 10px !important
 

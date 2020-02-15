@@ -10,14 +10,21 @@
                 :page-size="pageSize"  layout="total, sizes, prev, pager, next, jumper" :total="total")
         el-dialog(:visible.sync="dialogVisible" @close="dialogClose" width="450px")
             span(slot="title") {{dialogTitle}}
-            div(style="height: 370px;overflow: auto; padding: 0")
+            div(style="height: 320px;overflow: auto; padding: 0")
                 el-scrollbar(style="height:100%;")
                     el-form(:model="organizationInfo" :rules="organizationInfoRules" ref="form" label-width="110px" class="input-width")
                         el-form-item(label="名称：" prop="name")
                             el-input(v-model="organizationInfo.name" size="mini"  placeholder="请输入名称")
-                        el-form-item(label="父级组织：" prop="parentId")
-                            el-select(v-model="organizationInfo.parentId" :disabled="formEditFlag" filterable size='mini' style="width:100%;height: 28px"  class="options")
-                                el-option(v-for="(item, index) in organizationSelectOptions" :label="item.label" :value="item.value" :key="item.value")
+                        <!--el-form-item(label="父级组织：" prop="parentId")-->
+                            <!--el-select(v-model="organizationInfo.parentId" :disabled="formEditFlag" filterable size='mini' style="width:100%;height: 28px"  class="options")-->
+                                <!--el-option(v-for="(item, index) in organizationSelectOptions" :label="item.label" :value="item.value" :key="item.value")-->
+                        el-form-item(label="是否一级：" prop="isRoot")
+                            el-radio-group(v-model="organizationInfo.isRoot" @change="isRootChange")
+                                el-radio(:label="1") 是
+                                el-radio(:label="0") 否
+                        el-form-item(label="父级：" prop="parentId" v-show="organizationInfo.isRoot === 0")
+                            <!--el-select(v-model="authInfo.parentId" size='mini' filterable style="width:100%")-->
+                            el-tree-select(v-model="organizationInfo.parentId" popoverClass="elTreeSelectClass" selectClass="elTreeSelectClass" :style="elTreeSelectStyle" ref="treeSelect" :selectParams="selectTreeParams" :treeParams="treeParams")
                         el-form-item(label="负责人：" prop="leaderId")
                             el-select(v-model="organizationInfo.leaderId" :disabled="formEditFlag" filterable size='mini' style="width:100%;height: 28px" class="options")
                                 el-option(v-for="(item, index) in userSelectOptions" :label="item.label" :value="item.value" :key="item.value" )
@@ -26,20 +33,20 @@
             div(slot="footer")
                 el-button(@click="cancelFun" size="mini") 取消
                 el-button(type="primary" @click="okFun" size="mini") 确定
-        el-dialog(:visible.sync="dialogChartAuth" @close="dialogClose" width="800px")
+        el-dialog(:visible.sync="dialogChartAuth" fullscreen @close="dialogClose" width="800px")
             span(slot="title") 组织架构
-            div(style="height: 370px;overflow: auto; padding: 0")
+            div(style="overflow: auto; padding: 0")
                 el-scrollbar(style="height:100%;")
-                    vue2-org-tree(:render-content="renderContent" @on-node-click="onNodeClick" name="test" :horizontal="horizontal" :collapsable="collapsable"  @on-expand="onExpand" :data="authTreeData" :prop="{label: 'name', children: 'children', expand: 'expand'}")
+                    vue2-org-tree(:render-content="renderContent" @on-node-click="onNodeClick" name="test" :horizontal="horizontal" :collapsable="collapsable"  @on-expand="onExpand" :data="orgAllTreeData" :prop="{label: 'name', children: 'children', expand: 'expand'}")
         el-dialog(:visible.sync="dialogUserVisible" @close="dialogClose" width="700px" class="auth-transfer")
             span(slot="title") 成员
-            div(style="height: 370px;overflow: auto; padding: 0")
+            div(style="height: 320px;overflow: auto; padding: 0")
                 el-scrollbar(style="height:100%;")
                     el-form(:model="organUser" :rules="organUserRules" ref="form1" label-width="110px" class="input-width")
                         el-form-item(label="名称：" prop="name")
                             el-select(v-model="organUser.orId" size='mini' filterable :disabled="true" style="width:100%" )
                                 el-option(v-for="(item, index) in organizationSelectOptions" :label="item.label" :value="item.value" :key="item.value")
-                        el-form-item(label="系统人员：" prop="staffId")
+                        el-form-item(label="系统人员：" prop="userId")
                             el-transfer(filterable filter-placeholder="请输入系统人员名称" :titles="['候选人员', '已选人员']" v-model="organUser.userId" :data="userSelectOptions" :props="{key: 'value',label: 'label'}")
             div(slot="footer")
                 el-button(@click="cancelFun" size="mini") 取消
@@ -88,6 +95,7 @@ export default class Organization extends Vue {
   public $refs!: {
     form: HTMLFormElement;
     form1: HTMLFormElement;
+    treeSelect: any;
   };
   public tableColumn = [
     { prop: "name", label: "名称", width: 120 },
@@ -97,6 +105,7 @@ export default class Organization extends Vue {
   ];
   public organizationInfo = new OrganizationInfo();
   public tableData = [];
+  public orgAllTreeData: any = [];
   public currentPage: number = 1;
   public selectedRow: Array<number | string> = [];
   public pageSize: number = 10;
@@ -118,21 +127,55 @@ export default class Organization extends Vue {
   public organizationSelectOptions: SelectOption[] = [];
   public organizationId: any = "";
   public authTreeData: any = [];
+  public orgTreeData: any = [];
   public horizontal: boolean =  false;
   public collapsable: boolean = true;
   public expandAll: boolean = false;
+    public elTreeSelectStyle = {
+      width: '290px',
+      height: '28px',
+      fontSize: '12px'
+    };
+    public selectTreeParams = {
+      multiple: false,
+      clearable: true,
+      filterable: true,
+      placeholder: '请选择'
+    };
+    public treeParams = {
+      data: [],
+      clickParent: true,
+      filterable: true,
+      'check-strictly': true,
+      'default-expand-all': false,
+      'expand-on-click-node': false,
+      props: {
+        children: 'children',
+        label: 'name',
+        disabled: 'disabled',
+        value: 'id'
+      }
+    }
 
   @Watch("currentPage", { deep: true, immediate: false })
   public currentPageChange(val: any, oldVal: any) {
     this.getData();
   }
-  public editRow(data: any) {
+  public async editRow(data: any) {
     this.dialogVisible = true;
+    await this.getOrganizationList();
+    this.organizationInfo.isRoot = 1;
+    this.$nextTick(() => {
+      if (this.$refs.treeSelect) {
+        // @ts-ignore
+        this.$refs.treeSelect.treeDataUpdateFun(this.orgTreeData)
+      }
+    });
     this.dialogTitle = data != "editRow" ? "编辑组织" : "新增组组织";
     if (data != "editRow") {
       this.organizationId = data.row.id;
       this.formEditFlag = true;
-      this.getOrganizationInfo();
+      await this.getOrganizationInfo();
     }
   }
 
@@ -152,12 +195,12 @@ export default class Organization extends Vue {
   /**
    * 添加成员
    */
-  public givePerson(data: any) {
+  public async givePerson(data: any) {
     this.organUser.orId = data.row.id;
     this.organUser.userId = [];
     this.organizationId = data.row.id;
     this.dialogUserVisible = true;
-    this.getOrganizationInfo();
+    await this.getOrganizationInfo();
   }
 
   /**
@@ -210,7 +253,7 @@ export default class Organization extends Vue {
     const totalPageNumber = Math.ceil(this.total / this.pageSize);
     if (totalPageNumber < this.currentPage && this.total !== 0) {
       this.currentPage = totalPageNumber;
-      this.getData();
+      await this.getData();
     } else if (this.total === 0) {
       this.currentPage = 1;
     }
@@ -218,15 +261,11 @@ export default class Organization extends Vue {
   }
 
   /**
-   * 获取角色
+   * 获取所有用户
    * @param flag
    */
   public async getUserList() {
-    const response: any = await $get(userApi.userList.url, {
-      page: 1,
-      pageSize: 100000,
-      name: "",
-    });
+    const response: any = await $get(userApi.allUserLit.url, {});
     this.userSelectOptions =
       response.data && response.data.data
         ? this.dealUserListData(response.data.data.data)
@@ -235,14 +274,10 @@ export default class Organization extends Vue {
   }
 
   /**
-   * 获取全部的功能
+   * 获取全部的组织
    */
   public async getOrganizationList() {
-    const response: any = await $get(organizationApi.list.url, {
-      page: 1,
-      pageSize: 100000,
-      name: "",
-    });
+    const response: any = await $get(organizationApi.all.url, {});
     this.organizationSelectOptions =
       response.data && response.data.data
         ? this.dealOrganizationListData(response.data.data.data)
@@ -250,17 +285,35 @@ export default class Organization extends Vue {
     const treeData = response.data && response.data.data
       ? listToTree(response.data.data.data, 'id', 'parentId', 'children')
       : [];
-    this.authTreeData = treeData.length > 0 ? treeData[0] : {};
+    this.orgTreeData = treeData.length > 0 ? treeData : [];
+    console.log(this.orgTreeData);
+    this.orgAllTreeData = {
+      id: '-1',
+      children: treeData,
+      name: '组织架构'
+    };
     return false;
   }
 
+  public isRootChange (val:any) {
+    if (val == 1) {
+      this.organizationInfo.parentId = -1
+    } else {
+      this.$nextTick(() => {
+        if (this.$refs.treeSelect) {
+          // @ts-ignore
+          this.$refs.treeSelect.treeDataUpdateFun(this.orgTreeData)
+        }
+      })
+    }
+  }
   /**
    * pageSize修改
    * @param val
    */
-  public handleSizeChange(val: number) {
+  public async handleSizeChange(val: number) {
     this.pageSize = val;
-    this.getData();
+    await this.getData();
     return false;
   }
 
@@ -300,18 +353,28 @@ export default class Organization extends Vue {
     this.organizationId = "";
     this.formEditFlag = false;
     this.organizationInfo = new OrganizationInfo();
+    try {
+      this.$refs.form.resetFields()
+    }catch (e) {
+      return true;
+    }
   }
 
   /**
    * 弹窗取消
    */
-  private cancelFun() {
+  private async cancelFun() {
     this.dialogVisible = false;
     this.organizationId = "";
     this.formEditFlag = false;
     this.dialogUserVisible = false;
     this.organizationInfo = new OrganizationInfo();
-    this.getData();
+    await this.getData();
+    try {
+      this.$refs.form.resetFields()
+    }catch (e) {
+      return true;
+    }
   }
 
   /**
@@ -320,6 +383,7 @@ export default class Organization extends Vue {
   private async okFun() {
     let params: any;
     let api: string = "";
+    this.organizationInfo.parentId = this.organizationInfo.isRoot == 1 ? -1 : this.organizationInfo.parentId;
     if (this.dialogTitle.indexOf("新增") > -1) {
       params = { ...this.organizationInfo };
       api = organizationApi.add.url;
@@ -350,6 +414,7 @@ export default class Organization extends Vue {
       leaderId: organ.leader.id,
       parentId: organ.parentId,
       parentName: organ.parentName,
+      isRoot: (organ.parentId == -1 || organ.parentId == '-1') ? 1 : 0,
     };
     if (organ.users && organ.users.length > 0) {
           organ.users.forEach((item: any) => {
@@ -357,13 +422,15 @@ export default class Organization extends Vue {
           });
     }
     this.formEditFlag = this.organizationInfo.parentId === -1 ? true : false;
+    this.isRootChange(this.organizationInfo.isRoot);
   }
 
-  private openChartAuth() {
+  public async openChartAuth() {
     this.dialogChartAuth = true;
+    await this.getOrganizationList()
   }
 
-  private renderContent(h: any, data: any) {
+  public renderContent(h: any, data: any) {
     return data.name;
   }
 
@@ -388,7 +455,7 @@ export default class Organization extends Vue {
     });
   }
 
-  private expandChange() {
+  public expandChange() {
     this.toggleExpand(this.authTreeData, this.expandAll);
   }
 
@@ -417,14 +484,14 @@ export default class Organization extends Vue {
    * @param e
    * @param data
    */
-  private onNodeClick(e: any, data: any) {
+  public onNodeClick(e: any, data: any) {
     console.log(data);
   }
 
   /**
    * 添加成员到组织
    */
-  private async okAddUserOrganization() {
+  public async okAddUserOrganization() {
     this.$refs.form1.validate(async (valid: boolean) => {
       if (!valid)  {
         return false;

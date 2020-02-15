@@ -9,11 +9,11 @@
                 :page-size="pageSize"  layout="total, sizes, prev, pager, next, jumper" :total="total")
         el-dialog(:visible.sync="dialogVisible" @close="dialogClose" width="450px")
             span(slot="title") {{dialogTitle}}
-            div(style="height: 370px;overflow: auto; padding: 0")
+            div(style="height: 320px;overflow: auto; padding: 0")
                 el-scrollbar(style="height:100%;")
                     el-form(:model="roleInfo" :rules="roleInfoRules" ref="form" label-width="110px" class="input-width")
                         el-form-item(label="名称：" prop="name")
-                            el-input(v-model="roleInfo.name" size="mini"  placeholder="请输入名称")
+                            el-input(v-model="roleInfo.name" :disabled="roleInfo.name == 'root' || roleInfo.name == 'user' " size="mini"  placeholder="请输入名称")
                         el-form-item(label="编码：" prop="code")
                             el-input(v-model="roleInfo.code" size="mini" :disabled="formEditFlag" placeholder="请输入编码" )
                         el-form-item(label="描述：" prop="desc")
@@ -23,14 +23,14 @@
                 el-button(type="primary" @click="okFun" size="mini") 确定
         el-dialog(:visible.sync="dialogAuthVisible" @close="dialogClose" width="700px" class="auth-transfer")
             span(slot="title") 授权
-            div(style="height: 370px;overflow: auto; padding: 0")
+            div(style="height: 320px;overflow: auto; padding: 0")
                 el-scrollbar(style="height:100%;")
                     el-form(:model="authRole" :rules="authRoleRules" ref="form1" label-width="110px" class="input-width")
                         el-form-item(label="名称：" prop="name")
                             el-select(v-model="authRole.roleId" size='mini' filterable :disabled="true" style="width:100%" )
                                 el-option(v-for="(item, index) in roleSelectOptions" :label="item.label" :value="item.value" :key="item.value")
                         el-form-item(label="组织人员：" prop="staffId")
-                            tree-transfer( v-if="dialogAuthVisible" pid="parentId" :to_data='authRole.toData' :from_data='authSelectOptions' :button-text="['到左边', '到右边']" :defaultProps="{key: 'id', label: 'name'}" @addBtn='add' @removeBtn='remove' height='540px' filter openAll)
+                            tree-transfer( v-if="dialogAuthVisible" pid="parentId" :to_data='authRole.toData' :from_data='authSelectOptions' :button-text="['到左边', '到右边']" :defaultProps="{key: 'id', label: 'name'}" @addBtn='add' @removeBtn='remove' height='225px' filter openAll)
             div(slot="footer")
                 el-button(@click="cancelFun" size="mini") 取消
                 el-button(type="primary" @click="okAuthFun" size="mini") 确定
@@ -109,13 +109,13 @@ export default class Role extends Vue {
     public currentPageChange(val: any, oldVal: any) {
       this.getData();
     }
-    public editRow(data: any) {
+    public async editRow(data: any) {
       this.dialogVisible = true;
       this.dialogTitle = data != 'editRow' ? '编辑角色' : '新增角色';
       if (data != 'editRow') {
         this.roleId = data.row.id;
         this.formEditFlag = true;
-        this.getRoleInfo();
+        await this.getRoleInfo();
       }
 
     }
@@ -142,12 +142,12 @@ export default class Role extends Vue {
         });
       }
 
-    public giveAuth(data: any) {
+    public async giveAuth(data: any) {
       this.dialogAuthVisible = true;
       this.roleId = data.row.id;
       this.authRole.roleId  = data.row.id;
       this.dialogTitle = '授权';
-      this.getAuthRoleInfo();
+      await this.getAuthRoleInfo();
     }
     /**
      * 当前行是否可删除
@@ -155,6 +155,10 @@ export default class Role extends Vue {
      * @returns {boolean}
      */
     public allowDeleteData(row: any) {
+      console.log(row);
+      if (row.name == 'root' || row.name == 'user') {
+        return false;
+      }
       return true;
     }
 
@@ -190,7 +194,7 @@ export default class Role extends Vue {
       const totalPageNumber = Math.ceil(this.total / this.pageSize);
       if (totalPageNumber < this.currentPage && this.total !== 0) {
         this.currentPage = totalPageNumber;
-        this.getData();
+        await this.getData();
       } else if (this.total === 0) {
         this.currentPage = 1;
       }
@@ -202,13 +206,9 @@ export default class Role extends Vue {
      * @param flag
      */
     public async getRoleList() {
-      const response: any = await $get(roleApi.roleList.url, {
-        page: 1,
-        pageSize: 100000,
-        name: '',
-      });
+      const response: any = await $get(roleApi.allRoleList.url, {});
       this.roleSelectOptions = response.data && response.data.data ?
-        this.dealRoleListData(response.data.data.data) :
+        this.dealRoleListData(response.data.data) :
         [];
       return false;
     }
@@ -217,11 +217,7 @@ export default class Role extends Vue {
      * 获取全部的功能
      */
     public async getAuthList() {
-      const response: any = await $get(authApi.authTree.url, {
-        page: 1,
-        pageSize: 100000,
-        name: "",
-      });
+      const response: any = await $get(authApi.authTree.url, {});
       this.authSelectOptions =
         response.data && response.data.res
           ? response.data.res.data
@@ -272,18 +268,28 @@ export default class Role extends Vue {
       this.dialogAuthVisible = false;
       this.roleId = '';
       this.formEditFlag = false;
+      try {
+        this.$refs.form.resetFields()
+      }catch (e) {
+        return true;
+      }
     }
 
     /**
      * 弹窗取消
      */
-    private cancelFun() {
+    private async cancelFun() {
       this.dialogVisible = false;
       this.dialogAuthVisible = false;
       this.roleId = '';
       this.formEditFlag = false;
       this.roleInfo = new RoleInfo();
-      this.getData();
+      await this.getData();
+      try {
+        this.$refs.form.resetFields()
+      }catch (e) {
+        return true;
+      }
     }
 
     /**

@@ -4,14 +4,16 @@
         base-table(:dataFormat="tableColumn" :allowDeleteData="allowDeleteData" :tableData="tableData" @editRow="editRow" @deleteRow="deleteRow" :handleSelectionChange="handleSelectionChange")
             .search-items(slot="table-tools")
                 .search-item
-                    el-input(v-model="query.queryStr" @blur="getData('search')"  @keyup.enter.native="getData('search')" placeholder="请输入资源名称搜索" size="mini" suffix-icon="el-icon-search")
-                    el-input(v-model="query.system" @blur="getData('search')"  @keyup.enter.native="getData('search')" placeholder="请输入系统名称搜索" size="mini" suffix-icon="el-icon-search")
+                    el-input(v-model="query.queryStr" placeholder="请输入资源名称搜索" size="mini" suffix-icon="el-icon-search")
+                    el-select(v-model="query.system" clearable size='mini' placeholder="请选择系统")
+                        el-option(v-for="item in systemSelectOptions" :label="item.label" :value="item.value" :key="item.value")
+                    el-button(icon="el-icon-search" type="primary" @click="getData('search')" size="mini") 搜索
                 el-button(size="mini" type="primary" @click="openChartAuth") 资源架构
             el-pagination(slot="table-pagination" @size-change="handleSizeChange" :current-page.sync="currentPage"
                 :page-size="pageSize"  layout="total, sizes, prev, pager, next, jumper" :total="total")
         el-dialog(:visible.sync="dialogVisible" @close="dialogClose" width="450px")
             span(slot="title") {{dialogTitle}}
-            div(style="height: 370px;overflow: auto; padding: 0")
+            div(style="height: 320px;overflow: auto; padding: 0")
                 el-scrollbar(style="height:100%;")
                     el-form(:model="authInfo" :rules="authInfoRules" ref="form" label-width="110px" class="input-width")
                         el-form-item(label="名称：" prop="name")
@@ -21,22 +23,29 @@
                         el-form-item(label="路径：" prop="path")
                             el-input(v-model="authInfo.path" size="mini"  placeholder="请输入路径" )
                         el-form-item(label="系统：" prop="system")
-                            el-input(v-model="authInfo.system" size="mini"  placeholder="请输入所属系统" )
+                            el-select(v-model="authInfo.system" clearable style="width: 100%" size='mini' placeholder="请输入所属系统")
+                                el-option(v-for="item in systemSelectOptions" :label="item.label" :value="item.value" :key="item.value")
                         el-form-item(label="icon：" prop="icon")
                             el-input(v-model="authInfo.icon" size="mini" placeholder="请输入图标" )
-                        el-form-item(label="父级：" prop="parentId")
-                            el-select(v-model="authInfo.parentId" size='mini' filterable style="width:100%")
-                                el-option(v-for="(item, index) in authSelectOptions" :label="item.label" :value="item.value" :key="item.value")
+                        el-form-item(label="是否一级：" prop="isRoot")
+                            el-radio-group(v-model="authInfo.isRoot" @change="isRootChange")
+                                el-radio(:label="1") 是
+                                el-radio(:label="0") 否
+                        el-form-item(label="父级：" prop="parentId" v-show="authInfo.isRoot === 0")
+                            <!--el-select(v-model="authInfo.parentId" size='mini' filterable style="width:100%")-->
+                            el-tree-select(v-model="authInfo.parentId" popoverClass="elTreeSelectClass" selectClass="elTreeSelectClass" :style="elTreeSelectStyle" ref="treeSelect" :selectParams="selectTreeParams" :treeParams="treeParams")
                         el-form-item(label="描述：" prop="desc")
                             el-input(v-model="authInfo.desc" size="mini" placeholder="请输入描述" )
+                        el-form-item(label="地址：" prop="value")
+                            el-input(v-model="authInfo.value" size="mini" placeholder="请输入iframe地址" )
             div(slot="footer")
                 el-button(@click="cancelFun" size="mini") 取消
                 el-button(type="primary" @click="okFun" size="mini") 确定
-        el-dialog(:visible.sync="dialogChartAuth" @close="dialogClose" width="800px")
+        el-dialog(:visible.sync="dialogChartAuth" fullscreen @close="dialogClose" width="800px")
             span(slot="title") 资源架构
-            div(style="height: 370px;overflow: auto; padding: 0")
+            div(style="overflow: auto; padding: 0")
                 el-scrollbar(style="height:100%;")
-                    vue2-org-tree(:render-content="renderContent" @on-node-click="onNodeClick" name="test" :horizontal="horizontal" :collapsable="collapsable"  @on-expand="onExpand" :data="authTreeData" :prop="{label: 'name', children: 'children', expand: 'expand'}")
+                    vue2-org-tree(:render-content="renderContent" @on-node-click="onNodeClick" name="test" :horizontal="horizontal" :collapsable="collapsable"  @on-expand="onExpand" :data="authAllTreeData" :prop="{label: 'name', children: 'children', expand: 'expand'}")
 </template>
 
 <script lang="ts">
@@ -44,7 +53,7 @@ import { Vue, Prop, Watch, Emit, Component } from "vue-property-decorator";
 import BaseHeader from "@/components/table-page/BaseHeader.vue";
 import BaseTable from "@/components/table-page/BaseTable.vue";
 import { $post, $get } from "@/utils/feth";
-import { roleApi, authApi } from "@/api/api";
+import {roleApi, authApi, systemApi} from "@/api/api";
 import { validEmail } from "@/utils/validate";
 import Rule from "@/type/Rule";
 import SelectOption from "@/type/SelectOption";
@@ -79,6 +88,7 @@ export default class Auth extends Vue {
   };
   public $refs!: {
     form: HTMLFormElement;
+    treeSelect: any;
   };
   public tableColumn = [
     { prop: "name", label: "名称", width: 120 },
@@ -106,24 +116,63 @@ export default class Auth extends Vue {
   public formEditFlag: boolean = false;
   public authSelectOptions: SelectOption[] = [];
   public roleSelectOptions: SelectOption[] = [];
+  public systemSelectOptions: SelectOption[] = [];
   public authId: any = "";
   public authTreeData: any = [];
+  public authAllTreeData: any = [];
   public horizontal: boolean =  false;
   public collapsable: boolean = true;
   public expandAll: boolean = false;
   public resList: SelectOption[] = [];
+  public elTreeSelectStyle = {
+    width: '290px',
+    height: '28px',
+    fontSize: '12px'
+  };
+  public selectTreeParams = {
+    multiple: false,
+    clearable: true,
+    filterable: true,
+    placeholder: '请选择'
+  };
+  public treeParams = {
+    data: [],
+    clickParent: true,
+    filterable: true,
+    'check-strictly': true,
+    'default-expand-all': false,
+    'expand-on-click-node': false,
+    props: {
+      children: 'children',
+      label: 'name',
+      disabled: 'disabled',
+      value: 'id'
+    }
+  }
 
   @Watch("currentPage", { deep: true, immediate: false })
   public currentPageChange(val: any, oldVal: any) {
     this.getData();
   }
-  public editRow(data: any) {
+  /**
+   * 编辑添加
+   */
+  public async editRow(data: any) {
     this.dialogVisible = true;
+    this.authInfo = new AuthInfo();
+    await this.getAuthList();
+    this.$nextTick(() => {
+      if (this.$refs.treeSelect) {
+        // @ts-ignore
+        this.$refs.treeSelect.treeDataUpdateFun(this.authTreeData)
+      }
+    });
+    this.authInfo.isRoot = 1;
     this.dialogTitle = data != "editRow" ? "编辑资源" : "新增资源";
     if (data != "editRow") {
       this.authId = data.row.id;
       this.formEditFlag = true;
-      this.getAuthInfo();
+      await this.getAuthInfo();
     }
   }
 
@@ -136,7 +185,6 @@ export default class Auth extends Vue {
       });
       return false;
     }
-    console.log(ids);
     confirmDelete(authApi.deleteAuth.url, this.getData, { id: ids });
   }
 
@@ -154,6 +202,18 @@ export default class Auth extends Vue {
 
   }
 
+  public isRootChange (val:any) {
+    if (val == 1) {
+      this.authInfo.parentId = -1
+    } else {
+      this.$nextTick(() => {
+        if (this.$refs.treeSelect) {
+          // @ts-ignore
+          this.$refs.treeSelect.treeDataUpdateFun(this.authTreeData)
+        }
+      })
+    }
+  }
   /**
    * 多选
    * @param val
@@ -185,11 +245,11 @@ export default class Auth extends Vue {
     this.total = (response.data && response.data.data.count) || 0;
     this.tableData =
       response.data && response.data.data ? response.data.data.data : [];
-    this.getAuthList();
+    await this.getAuthList();
     const totalPageNumber = Math.ceil(this.total / this.pageSize);
     if (totalPageNumber < this.currentPage && this.total !== 0) {
       this.currentPage = totalPageNumber;
-      this.getData();
+      await this.getData();
     } else if (this.total === 0) {
       this.currentPage = 1;
     }
@@ -200,15 +260,11 @@ export default class Auth extends Vue {
    * 获取角色
    * @param flag
    */
-  public async getRoleList() {
-    const response: any = await $get(roleApi.roleList.url, {
-      page: 1,
-      pageSize: 100000,
-      name: "",
-    });
-    this.roleSelectOptions =
+  public async getSystemList() {
+    const response: any = await $get(systemApi.all.url, {});
+    this.systemSelectOptions =
       response.data && response.data.data
-        ? this.dealRoleListData(response.data.data.data)
+        ? this.dealSystemListData(response.data.data)
         : [];
     return false;
   }
@@ -217,20 +273,16 @@ export default class Auth extends Vue {
    * 获取全部的功能
    */
   public async getAuthList() {
-    const response: any = await $get(authApi.authList.url, {
-      page: 1,
-      pageSize: 100000,
-      name: "",
-      system: '',
-    });
-    this.authSelectOptions =
-      response.data && response.data.data
-        ? this.dealAuthListData(response.data.data.data)
-        : [];
+    const response: any = await $get(authApi.allAuthList.url, {});
     const treeData = response.data && response.data.data
     ? listToTree(response.data.data.data, 'id', 'parentId', 'children')
     : [];
-    this.authTreeData = treeData.length > 0 ? treeData[0] : {};
+    this.authTreeData = treeData.length > 0 ? treeData : [];
+    this.authAllTreeData = {
+      id: '-1',
+      children: treeData,
+      name: '资源架构'
+    };
     return false;
   }
 
@@ -238,33 +290,20 @@ export default class Auth extends Vue {
    * pageSize修改
    * @param val
    */
-  public handleSizeChange(val: number) {
+  public async handleSizeChange(val: number) {
     this.pageSize = val;
-    this.getData();
+    await this.getData();
     return false;
   }
 
   /**
-   * 处理角色列表
+   * 处理系统列表
    */
-  private dealRoleListData(data: any) {
+  private dealSystemListData(data: any) {
     const res = data.map((item: AuthInfo) => {
       return {
         label: item.name,
-        value: item.id,
-      };
-    });
-    return res;
-  }
-
-  /**
-   * 处理功能列表
-   */
-  private dealAuthListData(data: any) {
-    const res = data.map((item: AuthInfo) => {
-      return {
-        label: item.name,
-        value: item.id,
+        value: item.value,
       };
     });
     return res;
@@ -273,30 +312,41 @@ export default class Auth extends Vue {
   /**
    * 弹窗关闭
    */
-  private dialogClose() {
+  public dialogClose() {
     this.dialogVisible = false;
     this.dialogChartAuth = false;
     this.authId = "";
     this.formEditFlag = false;
+    try {
+      this.$refs.form.resetFields()
+    }catch (e) {
+      return true;
+    }
   }
 
   /**
    * 弹窗取消
    */
-  private cancelFun() {
+  private async cancelFun() {
     this.dialogVisible = false;
     this.authId = "";
     this.formEditFlag = false;
     this.authInfo = new AuthInfo();
-    this.getData();
+    await this.getData();
+    try {
+      this.$refs.form.resetFields()
+    }catch (e) {
+      return true;
+    }
   }
 
   /**
    * 弹窗确认
    */
-  private async okFun() {
+  public async okFun() {
     let params: any;
     let api: string = "";
+    this.authInfo.parentId = this.authInfo.isRoot == 1 ? -1 : this.authInfo.parentId;
     if (this.dialogTitle.indexOf("新增") > -1) {
       params = { ...this.authInfo };
       api = authApi.addAuth.url;
@@ -317,21 +367,27 @@ export default class Auth extends Vue {
     const res: any = await $get(authApi.getInfo.url, { id: this.authId });
     const auth: any =
       res.data && res.data.data ? res.data.data : new AuthInfo();
-    console.log(auth);
     this.authInfo = {
       name: auth.name,
       desc: auth.desc,
       code: auth.code,
       parentId: auth.parentId,
       parentName: auth.parentName,
+      isRoot: (auth.parentId == -1 || auth.parentId == '-1') ? 1 : 0,
       icon: auth.icon,
       path: auth.path,
       system: auth.system,
+      value: auth.value
     };
+    this.isRootChange(this.authInfo.isRoot);
   }
 
-  private openChartAuth() {
+  /**
+   * 打开资源架构
+   */
+  public async openChartAuth() {
     this.dialogChartAuth = true;
+    await this.getAuthList();
   }
 
   private renderContent(h: any, data: any) {
@@ -389,8 +445,9 @@ export default class Auth extends Vue {
     console.log(data);
   }
 
-  private created() {
-    this.getData();
+  private async created() {
+    await this.getData();
+    await this.getSystemList();
   }
 }
 </script>

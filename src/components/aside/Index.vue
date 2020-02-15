@@ -1,8 +1,7 @@
 <template lang="pug">
     .container
         el-scrollbar(style="height:100%;" class="fpi-scroll")
-            el-menu(default-active="0" class="el-menu-vertical-demo" @select="menuSelected" background-color="#19202e"
-                text-color="#ffffff" active-text-color="#1989f8")
+            el-menu(default-active="0" class="el-menu-vertical-demo" @select="menuSelected" @open="open" background-color="#19202e" text-color="#ffffff" active-text-color="#1989f8" :router="true")
                 SlideTree(:navMenus="menus")
 </template>
 
@@ -15,9 +14,7 @@
     },
   })
   export default class Aside extends Vue {
-    @Prop({
-      default: [],
-    })
+    @Prop({ type: Array, default: () => { return []; }})
     private menus: any;
 
     private created() {
@@ -25,13 +22,22 @@
     }
 
     private menuSelected(val: (number | string), indexPath: string[] ) {
-      try {
-        if (this.$route.path != '/' + indexPath.join('/')) {
-          this.$router.push('/' + indexPath.join('/'));
-        }
-      } catch (e) {
-        return true;
-      }
+      console.log(indexPath);
+      console.log(val);
+      // try {
+      //   if (this.$route.path != '/' + indexPath.join('/')) {
+      //     this.$router.push('/' + indexPath.join('/'));
+      //   }
+      // } catch (e) {
+      //   if (this.$route.path != '/' + indexPath.join('/')) {
+      //     this.$router.push('/' + indexPath.join('/'));
+      //   }
+      // }
+    }
+
+    private open(val: (number | string), indexPath: string[] ) {
+      console.log(val);
+      console.log(indexPath);
     }
   }
 </script>

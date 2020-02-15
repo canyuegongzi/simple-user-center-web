@@ -1,4 +1,8 @@
 export const userApi = {
+  allUserLit: {
+    method: 'get',
+    url: '/user/all',
+  },
   userList: {
     method: 'get',
     url: '/user/list',
@@ -21,6 +25,10 @@ export const userApi = {
   },
 };
 export const roleApi = {
+  allRoleList: {
+    method: 'get',
+    url: '/role/all'
+  },
   roleList: {
     method: 'get',
     url: 'role/list',
@@ -51,6 +59,10 @@ export const roleApi = {
   },
 };
 export const authApi = {
+  allAuthList: {
+    method: 'get',
+    url: '/authority/all',
+  },
   authList: {
     method: 'get',
     url: '/authority/list',
@@ -77,6 +89,10 @@ export const authApi = {
   },
 };
 export const organizationApi = {
+  all: {
+    method: 'post',
+    url: '/organization/all',
+  },
   add: {
     method: 'post',
     url: '/organization/add',
@@ -95,7 +111,7 @@ export const organizationApi = {
   },
   info: {
     method: 'get',
-    url: '/organization/getOrganizationInfo',
+    url: '/organization/organizationInfo',
   },
   list: {
     method: 'get',
@@ -110,5 +126,34 @@ export const organizationApi = {
     method: 'get',
     url: '/organization/organizationTree',
   },
+};
+/**
+ * 系统中心
+ */
+export const systemApi = {
+  all: {
+    method: 'post',
+    url: '/system/all',
+  },
+  add: {
+    method: 'post',
+    url: '/system/add',
+  },
+  update: {
+    method: 'update',
+    url: '/system/update',
+  },
+  delete: {
+    method: 'update',
+    url: '/system/delete',
+  },
+  info: {
+    method: 'get',
+    url: '/system/info',
+  },
+  list: {
+    method: 'get',
+    url: '/system/list',
+  }
 };
 

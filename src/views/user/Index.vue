@@ -1,15 +1,20 @@
 <template lang="pug">
     .container
-        base-header(title="用户中心" @editRow="editRow" @deleteRow="deleteRow" :isDelete="false")
-        base-table(:dataFormat="tableColumn" :allowDelete="false" :allowDeleteData="allowDeleteData" :tableData="tableData" @editRow="editRow" @deleteRow="deleteRow" :handleSelectionChange="handleSelectionChange")
+        base-header(title="用户中心" @editRow="editRow" @deleteRow="deleteRow" :isDelete="true")
+        base-table(:dataFormat="tableColumn" :allowDelete="true" :allowDeleteData="allowDeleteData" :tableData="tableData" @editRow="editRow" @deleteRow="deleteRow" :handleSelectionChange="handleSelectionChange")
             .search-items(slot="table-tools")
                 .search-item
-                    el-input(v-model="query.queryStr" @blur="getData('search')"  @keyup.enter.native="getData('search')" placeholder="请输入用户名称搜索" size="mini" suffix-icon="el-icon-search")
+                    el-input(v-model="query.queryStr" placeholder="请输入用户名称" size="mini" clearable	)
+                    el-input(v-model="query.queryNick" placeholder="请输入用户昵称" size="mini" clearable	)
+                    el-input(v-model="query.queryEmail" placeholder="请输入用户邮件" size="mini" clearable	)
+                    el-select(v-model="query.roleId" clearable size='mini' placeholder="请选择角色")
+                        el-option(v-for="item in roleSelectOptions" :label="item.label" :value="item.value" :key="item.value")
+                    el-button(icon="el-icon-search" type="primary" @click="getData('search')" size="mini") 搜索
             el-pagination(slot="table-pagination" @size-change="handleSizeChange" :current-page.sync="currentPage"
                 :page-size="pageSize"  layout="total, sizes, prev, pager, next, jumper" :total="total")
         el-dialog(:visible.sync="dialogVisible" @close="dialogClose" width="450px")
             span(slot="title") {{dialogTitle}}
-            div(style="height: 370px;overflow: auto; padding: 0")
+            div(style="height: 320px;overflow: auto; padding: 0")
                 el-scrollbar(style="height:100%;")
                     el-form(:model="userInfo" :rules="userInfoRules" ref="form" label-width="110px" class="input-width")
                         el-form-item(label="用户名：" prop="name")
@@ -104,6 +109,9 @@
     public pageTitle: string = '新增';
     public query: any = {
       queryStr:  '',
+      queryEmail: '',
+      queryNick: '',
+      roleId: '',
     };
     public dialogVisible: boolean = false;
     public dialogTitle: string = '新增用户';
@@ -115,20 +123,19 @@
     public currentPageChange(val: any, oldVal: any) {
       this.getData();
     }
-    public editRow(data: any) {
+    public async editRow(data: any) {
         this.dialogVisible = true;
         this.userInfo = new UserInfo();
         this.dialogTitle = data != 'editRow' ? '编辑用户' : '新增用户';
         if (data != 'editRow') {
           this.userId = data.row.id;
           this.formEditFlag = true;
-          this.getUserInfo();
+          await this.getUserInfo();
         }
 
     }
 
     public deleteRow(data: any) {
-      console.log(data);
       const ids = data == 'deleteRow' ? this.selectedRow : [data.row.id];
       if (ids.length < 1 || ids === null) {
         this.$message({
@@ -137,9 +144,7 @@
         });
         return false;
       }
-      console.log(ids);
-      confirmDelete(userApi.deleteUser.url, this.getData, {id: ids});
-      // return false
+      confirmDelete(userApi.deleteUser.url, this.getData, {ids: ids});
     }
 
     /**
@@ -148,7 +153,13 @@
      * @returns {boolean}
      */
     public allowDeleteData(row: any) {
-      return false;
+      if (row.organizations && row.organizations.length > 0) {
+        return false;
+      }
+      if (row.role.name === 'root') {
+        return false;
+      }
+      return true;
     }
 
      /**
@@ -177,14 +188,17 @@
         page: this.currentPage,
         pageSize: this.pageSize,
         name: this.query.queryStr,
+        nick: this.query.queryNick,
+        email: this.query.queryEmail,
+        roleId: this.query.roleId
       });
       this.total = response.data && response.data.data.count || 0;
       this.tableData = response.data && response.data.data ?  this.dealTableData(response.data.data.data) : [];
-      this.getRoleList();
+      await this.getRoleList();
       const totalPageNumber = Math.ceil(this.total / this.pageSize);
       if (totalPageNumber < this.currentPage && this.total !== 0) {
         this.currentPage = totalPageNumber;
-        this.getData();
+        await this.getData();
       } else if (this.total === 0) {
         this.currentPage = 1;
       }
@@ -196,12 +210,8 @@
      * @param flag
      */
     public async getRoleList() {
-      const response: any = await $get(roleApi.roleList.url, {
-        page: 1,
-        pageSize: 100000,
-        name: '',
-      });
-      this.roleSelectOptions = response.data && response.data.data ?  this.dealRoleListData(response.data.data.data) : [];
+      const response: any = await $get(roleApi.allRoleList.url, {});
+      this.roleSelectOptions = response.data && response.data.data ?  this.dealRoleListData(response.data.data) : [];
       return false;
     }
 
@@ -209,9 +219,9 @@
      * pageSize修改
      * @param val
      */
-    public handleSizeChange(val: number) {
+    public async handleSizeChange(val: number) {
       this.pageSize = val;
-      this.getData();
+      await this.getData();
       return false;
     }
 
@@ -255,17 +265,27 @@
       this.dialogVisible = false;
       this.userId = '';
       this.formEditFlag = false;
+      try {
+        this.$refs.form.resetFields()
+      }catch (e) {
+        return true;
+      }
     }
 
     /**
      * 弹窗取消
      */
-    private cancelFun() {
+    private async cancelFun() {
       this.dialogVisible = false;
       this.userId = '';
       this.formEditFlag = false;
       this.userInfo = new UserInfo();
-      this.getData();
+      await this.getData();
+      try {
+        this.$refs.form.resetFields()
+      }catch (e) {
+        return true;
+      }
     }
 
     /**
@@ -297,7 +317,7 @@
               message: res.data.message,
             });
           }
-          this.cancelFun();
+          await this.cancelFun();
         });
     }
 

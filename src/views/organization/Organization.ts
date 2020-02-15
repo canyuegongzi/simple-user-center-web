@@ -7,4 +7,5 @@ export default class OrganizationInfo {
   public parentName?: string  = '';
   public leaderId?: any = '';
   public leaderName?: string = '';
+  public isRoot?: number = 1;
 }

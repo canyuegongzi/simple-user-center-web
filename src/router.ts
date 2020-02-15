@@ -34,19 +34,25 @@ export const route = [
       name: 'role-index',
       component: () => import('./views/organization/Index.vue'),
     },
+    {
+      path: '/systemManage/systemList',
+      name: 'system-index',
+      component: () => import('./views/system/Index.vue'),
+    },
   ];
 
 function beforeEach(to: { matched: { length: number; }; }, from: any, next: () => void) {
+  console.log(to);
   if (to.matched.length > 0) {
     const location = window.location;
     const token: string =  Storage.localGet('token') || '';
-    // if (!token) {
-    //   const url = location.href;
-    //     // @ts-ignore
-    //   window.location.replace(window.ENV.domain + window.ENV.casDomain + '?redirectUrl=' + url);
-    // } else {
-    //   next();
-    // }
+    if (!token) {
+      const url = location.href;
+        // @ts-ignore
+      window.location.replace(window.ENV.domain + window.ENV.casDomain + '?redirectUrl=' + url);
+    } else {
+      next();
+    }
     next();
 
   } else {

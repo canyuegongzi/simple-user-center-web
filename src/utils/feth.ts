@@ -95,12 +95,6 @@ function getBaseUrl(name: string) {
     switch (name) {
         case 'wbw':
             return baseURL;
-        case 'scus':
-            return `${userBaseURL}/api/v1.0`;
-        case 'files':
-            return fileBaseURL;
-        case 'bsps':
-            return permissionBaseURL;
         default:
             return baseURL;
     }

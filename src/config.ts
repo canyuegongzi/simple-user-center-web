@@ -1,6 +1,4 @@
 // @ts-ignore
-import DC from 'json-loader';
-// @ts-ignore
 const ENV = window.ENV;
 
 // 是否是内网环境
@@ -14,25 +12,10 @@ if (ENV.domain) {
   domain = location.protocol + '//' + location.host;
 }
 
-// 水环境基础信息管理系统
+// 基础地址
 const baseURL = /^(http:\/\/|https:\/\/)/.test(ENV.wgmsBaseWeb) ?
-  getDomain(ENV.wgmsBaseWeb, innerNet) :
+  ENV.wgmsBaseWeb :
   domain + ENV.wgmsBaseWeb;
-
-// 用户接口地址
-const userBaseURL = /^(http:\/\/|https:\/\/)/.test(ENV.userDomain) ?
-  getDomain(ENV.userDomain, innerNet) :
-  domain + ENV.userDomain;
-
-// 文件服务
-const fileBaseURL = /^(http:\/\/|https:\/\/)/.test(ENV.userDomain) ?
-  getDomain(ENV.userDomain, innerNet) :
-  domain + ENV.userDomain;
-
-// 权限服务地址
-const permissionBaseURL = /^(http:\/\/|https:\/\/)/.test(ENV.permissionDomain) ?
-  getDomain(ENV.permissionDomain, innerNet) :
-  domain + ENV.permissionDomain;
 
 // cas单点登录地址
 const casBaseURL = /^(http:\/\/|https:\/\/)/.test(ENV.casDomain) ?
@@ -47,20 +30,11 @@ const webHomePage = /^(http:\/\/|https:\/\/)/.test(ENV.webHomePage) ?
 // 当前web页面访问地址
 const webHomePageStr =  encodeURIComponent(webHomePage);
 
-// 未登录，跳转到cas登录地址
-const bspURL = `${casBaseURL}/login?service=${userBaseURL}/userCenter/auth/authUser?redirectUrl=${webHomePageStr}`;
-
 export  {
   innerNet,
   domain,
   baseURL,
   casBaseURL,
-  bspURL,
-  userBaseURL,
-  fileBaseURL,
-  permissionBaseURL,
-  webHomePage,
-  DC,
   ENV,
 };
 

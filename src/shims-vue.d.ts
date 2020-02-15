@@ -34,3 +34,6 @@ declare module 'el-tree-transfer' {
 declare module 'vue2-org-tree' {
   export const Vue2OrgTree: any;
 }
+declare module 'el-tree-select' {
+  export const ElTreeSelect: any;
+}
