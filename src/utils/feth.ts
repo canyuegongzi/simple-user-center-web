@@ -4,7 +4,7 @@ import axios from 'axios';
 import qs from 'qs';
 // @ts-ignore
 import UAParser from 'ua-parser-js';
-import {baseURL, bspURL, fileBaseURL, permissionBaseURL, userBaseURL} from "../config";
+import {baseURL} from "../config";
 // 取消请求
 const CancelToken = axios.CancelToken;
 // 是否需要拦截code==-1的状态

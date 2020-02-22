@@ -12,19 +12,19 @@
 </template>
 
 <script lang="ts">
-  import { Vue, Prop, Watch, Emit, Component } from "vue-property-decorator";
-  @Component({
-    name: 'SlideTree',
-  })
-  export default class SlideTree extends Vue {
-    private name: string = 'SlideTree';
+    import { Vue, Prop, Watch, Emit, Component } from "vue-property-decorator";
+    @Component({
+        name: 'SlideTree',
+    })
+    export default class SlideTree extends Vue {
+        private name: string = 'SlideTree';
 
-    @Prop({ type: Array, default: () => { return []; }})
-    private navMenus: any;
-    private created() {
-      console.log('组件初始化');
+        @Prop({ type: Array, default: () => { return []; }})
+        private navMenus: any;
+        private created() {
+            console.log('组件初始化');
+        }
     }
-  }
 </script>
 
 <style lang="stylus" scoped>
