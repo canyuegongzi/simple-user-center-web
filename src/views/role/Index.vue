@@ -155,7 +155,6 @@ export default class Role extends Vue {
      * @returns {boolean}
      */
     public allowDeleteData(row: any) {
-      console.log(row);
       if (row.name == 'root' || row.name == 'user') {
         return false;
       }

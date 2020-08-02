@@ -6,7 +6,6 @@
  * @param children
  */
 export const listToTree = (source: any, id?: any, parentId?: any, children?: any) => {
-    console.log(source);
     const cloneData = JSON.parse(JSON.stringify(source));
     return cloneData.filter((father: any) => {
         const branchArr = cloneData.filter((child: any) => father[id] === child[parentId]);

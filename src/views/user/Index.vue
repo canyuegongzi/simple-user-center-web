@@ -1,7 +1,7 @@
 <template lang="pug">
     .container
         base-header(title="用户中心" @editRow="editRow" @deleteRow="deleteRow" :isDelete="true")
-        base-table(:dataFormat="tableColumn" :allowDelete="true" :allowDeleteData="allowDeleteData" :tableData="tableData" @editRow="editRow" @deleteRow="deleteRow" :handleSelectionChange="handleSelectionChange")
+        base-table(:dataFormat="tableColumn" :allowDelete="true" :allowPushMessage="true" :allowDeleteData="allowDeleteData" :tableData="tableData" @editRow="editRow" @giveAllowPushMessage="giveAllowPushMessage" @deleteRow="deleteRow" :handleSelectionChange="handleSelectionChange")
             .search-items(slot="table-tools")
                 .search-item
                     el-input(v-model="query.queryStr" placeholder="请输入用户名称" size="mini" clearable	)
@@ -12,7 +12,7 @@
                     el-button(icon="el-icon-search" type="primary" @click="getData('search')" size="mini") 搜索
             el-pagination(slot="table-pagination" @size-change="handleSizeChange" :current-page.sync="currentPage"
                 :page-size="pageSize"  layout="total, sizes, prev, pager, next, jumper" :total="total")
-        el-dialog(:visible.sync="dialogVisible" @close="dialogClose" width="450px")
+        el-dialog(:visible.sync="dialogVisible"  @close="dialogClose" width="450px")
             span(slot="title") {{dialogTitle}}
             div(style="height: 320px;overflow: auto; padding: 0")
                 el-scrollbar(style="height:100%;")
@@ -37,12 +37,16 @@
             div(slot="footer")
                 el-button(@click="cancelFun" size="mini") 取消
                 el-button(type="primary" @click="okFun" size="mini") 确定
+        el-dialog(:visible.sync="dialogVisible1" v-if="dialogVisible1" lock-scroll fullscreen destroy-on-close custom-class="dialogVisible1-class")
+            el-scrollbar(style="height:100%;")
+                compponent(is="AddTask" :currentUserInfo="currentUserRow" @successPush="successPush")
 
 </template>
 <script lang="ts">
   import { Vue, Prop, Watch, Emit, Component } from "vue-property-decorator";
   import BaseHeader from '@/components/table-page/BaseHeader.vue';
   import BaseTable from '@/components/table-page/BaseTable.vue';
+  import AddTask from './AddTask.vue'
   import {$post, $get } from '@/utils/feth';
   import {userApi, roleApi} from '@/api/api';
   import {validEmail} from '@/utils/validate';
@@ -55,6 +59,7 @@
     components: {
       BaseHeader,
       BaseTable,
+      AddTask
     },
   })
   export default class User extends Vue {
@@ -66,6 +71,7 @@
         callback();
       }
     }
+    public currentUserRow: UserInfo = new UserInfo();
     public userInfoRules = {
       name: [
         new Rule({message: '用户名不能为空'}),
@@ -106,6 +112,7 @@
     public selectedRow: Array<number| string> = [];
     public pageSize: number =  10;
     public total: number = 0;
+    public dialogVisible1: boolean = false
     public pageTitle: string = '新增';
     public query: any = {
       queryStr:  '',
@@ -122,6 +129,25 @@
     @Watch('currentPage', { deep: true, immediate: false })
     public currentPageChange(val: any, oldVal: any) {
       this.getData();
+    }
+    /**
+     * 消息推送
+     */
+    public async giveAllowPushMessage(data: any) {
+        const row = data.row
+        if (!row.verification) {
+            this.$message.warning('该用户未完成身份认证')
+            return
+        }
+        this.dialogVisible1 = true
+        console.log(data)
+        this.currentUserRow = data.row
+        console.log(this.currentUserRow)
+    }
+
+    public successPush() {
+        this.dialogVisible1 = false
+        this.currentUserRow = new UserInfo()
     }
     public async editRow(data: any) {
         this.dialogVisible = true;
@@ -327,6 +353,7 @@
       console.log(user);
       this.userInfo = {
         name: user.name,
+        phone: user.phone,
         nick: user.nick,
         age: user.age,
         email: user.email,
@@ -343,6 +370,9 @@
   }
 </script>
 
-<style lang="stylus" scoped>
-
+<style lang="stylus">
+.dialogVisible1-class
+    height 100%
+    >>>.el-dialog__body
+          padding 0 0 !important
 </style>

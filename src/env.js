@@ -1,8 +1,12 @@
 // 生产环境
-window.ENV = {
-    domain: 'http://canyuegongzi.xyz',
-    // domain: 'http://172.19.25.6:8881',
-    casDomain: '/user-login-cas-web', //cas服务
-    // casDomain: 'http://127.0.0.1:8081', //cas服务
-    wgmsBaseWeb: 'http://127.0.0.1:8881',
- }
+export const ENV = {
+    domain: 'http://148.70.150.131',
+    casDomain: 'http://canyuegongzi.xyz/user-login-cas-web',
+    //wgmsBaseWeb: 'http://148.70.150.131:9002/simple-user-center/v1.0',
+    wgmsBaseWeb: 'http://127.0.0.1:8881/simple-user-center/v1.0',
+    pushBaseWeb: 'http://148.70.150.131:9002/simple-notice-center/v1.0',
+    webHomePage: '/wgms-base-web',
+};
+// @ts-ignore
+window.USERENV = ENV;
+//# sourceMappingURL=env.js.map

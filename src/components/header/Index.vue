@@ -1,6 +1,8 @@
 <template lang="pug">
     .container.flex.fz-18
-        span  BSP系统V1.0
+        span  BSP系统V1.1
+        span(style="color: red")  集成系统请转至
+            span(@click="locationAdmin" style="cursor: pointer") http://canyuegongzi.xyz/simple-admin/
         .up-right
             el-dropdown.login(@command='userAction')
                 img.avatar(src="~assets/images/avatar.png")
@@ -41,6 +43,11 @@
     @Emit('pushChangePassword')
     public pushChangePassword(): any {
       return 'pushChangePassword';
+    }
+
+    public locationAdmin () {
+        this.mineLocalStore.removeItem('token');
+        window.location.href = 'http://canyuegongzi.xyz/simple-admin/';
     }
 
 

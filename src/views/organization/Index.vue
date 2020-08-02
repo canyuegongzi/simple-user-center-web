@@ -286,7 +286,6 @@ export default class Organization extends Vue {
       ? listToTree(response.data.data.data, 'id', 'parentId', 'children')
       : [];
     this.orgTreeData = treeData.length > 0 ? treeData : [];
-    console.log(this.orgTreeData);
     this.orgAllTreeData = {
       id: '-1',
       children: treeData,
@@ -485,7 +484,7 @@ export default class Organization extends Vue {
    * @param data
    */
   public onNodeClick(e: any, data: any) {
-    console.log(data);
+
   }
 
   /**
@@ -521,4 +520,7 @@ export default class Organization extends Vue {
         >>>.el-input
                 .el-input__inner
                         height 28px !important
+    .auth-transfer
+        >>>.el-dialog
+                width 800px !important
 </style>

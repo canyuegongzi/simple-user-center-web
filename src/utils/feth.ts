@@ -4,7 +4,8 @@ import axios from 'axios';
 import qs from 'qs';
 // @ts-ignore
 import UAParser from 'ua-parser-js';
-import {baseURL} from "../config";
+import {baseURL, domain, ENV, pushURL} from "../config";
+import {MimeStorage} from "@/utils/localStorage";
 // 取消请求
 const CancelToken = axios.CancelToken;
 // 是否需要拦截code==-1的状态
@@ -21,6 +22,9 @@ axios.defaults.timeout = 20000;
 // config 代表发起请求的参数的实体
 let requestName: any;
 axios.interceptors.request.use((config: any) => {
+    const mimeStorage = new MimeStorage();
+    let sessionStorageToken: any = mimeStorage.getItem('token') || sessionStorage.getItem('token');
+    config.headers.token = sessionStorageToken;
     // 得到参数中的 requestName 字段，用于决定下次发起请求，取消对应的 相同字段的请求
     // 如果没有 requestName 就默认添加一个 不同的时间戳
     if (config.method === 'post') {
@@ -60,9 +64,16 @@ axios.interceptors.request.use((config: any) => {
 }, (error: any) => {
     return Promise.reject(error);
 });
-
+const casBaseURL = /^(http:\/\/|https:\/\/)/.test(ENV.casDomain) ?
+    ENV.casDomain :
+    domain + ENV.casDomain;
 // 请求到结果的拦截处理
 axios.interceptors.response.use( (config: any) => {
+    if (config.data && config.data.code && config.data.code == 30000) {
+        const url = location.origin + location.pathname;
+        // @ts-ignore
+        window.location.href = casBaseURL + '?redirectUrl=' + url;
+    }
     return config.data;
 }, (error: any) => {
     return Promise.reject(error);
@@ -91,10 +102,11 @@ export const $get =  (url: any, params: any, server: any =  'wbw') => {
     });
 };
 function getBaseUrl(name: string) {
-    console.log(name);
     switch (name) {
         case 'wbw':
             return baseURL;
+        case 'push':
+            return pushURL;
         default:
             return baseURL;
     }

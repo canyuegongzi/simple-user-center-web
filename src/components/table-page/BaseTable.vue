@@ -23,6 +23,7 @@
                         a(v-show="allowDeleteData(scope.row)" class="operate delete" @click="deleteRow(scope)") 删除
                         a(v-show="isGiveAuth" class="operate delete" @click="giveAuth(scope)") 授权
                         a(v-show="isPerson" class="operate delete" @click="givePerson(scope)") 成员
+                        a(v-show="allowPushMessage" class="operate delete" @click="giveAllowPushMessage(scope)") 消息推送
             template(v-if="customTable")
                 slot(name="custom-table")
         .pagination.txt-right
@@ -40,6 +41,8 @@
     public tableData: any;
     @Prop({ default: () => true })
     public allowDelete!: boolean;
+    @Prop({ default: () => false })
+    public allowPushMessage!: boolean;
     @Prop({ default: '' })
     public tableTitle!: string;
     @Prop({ default: () => false })
@@ -99,6 +102,12 @@
       return data;
     }
 
+    @Emit('giveAllowPushMessage')
+    public giveAllowPushMessage(data: any): any {
+        return data;
+    }
+
+
     /**
      * 选中
      */
@@ -128,7 +137,6 @@
     }
 
     private created() {
-      console.log('组件初始化');
     }
 
     private mounted() {

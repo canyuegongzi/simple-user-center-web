@@ -1,6 +1,6 @@
 <template lang="pug">
     .container
-        base-header(title="资源中心" @editRow="editRow" @deleteRow="deleteRow")
+        base-header(title="菜单资源" @editRow="editRow" @deleteRow="deleteRow")
         base-table(:dataFormat="tableColumn" :allowDeleteData="allowDeleteData" :tableData="tableData" @editRow="editRow" @deleteRow="deleteRow" :handleSelectionChange="handleSelectionChange")
             .search-items(slot="table-tools")
                 .search-item
@@ -26,7 +26,7 @@
                             el-select(v-model="authInfo.system" clearable style="width: 100%" size='mini' placeholder="请输入所属系统")
                                 el-option(v-for="item in systemSelectOptions" :label="item.label" :value="item.value" :key="item.value")
                         el-form-item(label="icon：" prop="icon")
-                            el-input(v-model="authInfo.icon" size="mini" placeholder="请输入图标" )
+                            icon-picker(v-model="authInfo.icon" placeholder="请选择图标" )
                         el-form-item(label="是否一级：" prop="isRoot")
                             el-radio-group(v-model="authInfo.isRoot" @change="isRootChange")
                                 el-radio(:label="1") 是

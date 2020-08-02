@@ -7,4 +7,5 @@ export default class UserInfo {
   public address: string = '';
   public roleId: string | number = '';
   public password: string = '';
+  public phone: string = '';
 }

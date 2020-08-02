@@ -37,3 +37,6 @@ declare module 'vue2-org-tree' {
 declare module 'el-tree-select' {
   export const ElTreeSelect: any;
 }
+declare module 'vue-fontawesome-elementui-icon-picker' {
+  export const iconPicker: any;
+}

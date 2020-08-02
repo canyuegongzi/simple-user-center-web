@@ -1,5 +1,4 @@
-// @ts-ignore
-const ENV = window.ENV;
+import { ENV } from './env';
 
 // 是否是内网环境
 const innerNet =  process.env.NODE_ENV === 'dev' ? true : /^(192|0|127|172|localhost)/.test(location.hostname);
@@ -16,6 +15,11 @@ if (ENV.domain) {
 const baseURL = /^(http:\/\/|https:\/\/)/.test(ENV.wgmsBaseWeb) ?
   ENV.wgmsBaseWeb :
   domain + ENV.wgmsBaseWeb;
+
+// 基础地址
+const pushURL = /^(http:\/\/|https:\/\/)/.test(ENV.pushBaseWeb) ?
+    ENV.pushBaseWeb :
+    domain + ENV.pushBaseWeb;
 
 // cas单点登录地址
 const casBaseURL = /^(http:\/\/|https:\/\/)/.test(ENV.casDomain) ?
@@ -35,6 +39,7 @@ export  {
   domain,
   baseURL,
   casBaseURL,
+  pushURL,
   ENV,
 };
 

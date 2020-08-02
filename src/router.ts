@@ -30,6 +30,16 @@ export const route = [
       component: () => import('./views/auth/Index.vue'),
     },
     {
+        path: '/roleManage/giveAuth',
+        name: 'giveAuth-index',
+        component: () => import('./views/giveAuth/GiveAuth.vue'),
+    },
+    {
+        path: '/roleManage/apiList',
+        name: 'api-index',
+        component: () => import('./views/apiResource/Index.vue'),
+    },
+    {
       path: '/organManage/organList',
       name: 'role-index',
       component: () => import('./views/organization/Index.vue'),
@@ -42,14 +52,13 @@ export const route = [
   ];
 
 function beforeEach(to: { matched: { length: number; }; }, from: any, next: () => void) {
-  console.log(to);
   if (to.matched.length > 0) {
     const location = window.location;
     const token: string =  Storage.localGet('token') || '';
     if (!token) {
       const url = location.href;
         // @ts-ignore
-      window.location.replace(window.ENV.domain + window.ENV.casDomain + '?redirectUrl=' + url);
+      window.location.replace(window.USERENV.domain + window.USERENV.casDomain + '?redirectUrl=' + url);
     } else {
       next();
     }

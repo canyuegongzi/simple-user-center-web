@@ -18,12 +18,11 @@
         private menus: any;
 
         private created() {
-            console.log('组件初始化');
+
         }
 
         private menuSelected(val: (number | string), indexPath: string[] ) {
-            console.log(indexPath);
-            console.log(val);
+
             // try {
             //   if (this.$route.path != '/' + indexPath.join('/')) {
             //     this.$router.push('/' + indexPath.join('/'));
@@ -36,8 +35,6 @@
         }
 
         private open(val: (number | string), indexPath: string[] ) {
-            console.log(val);
-            console.log(indexPath);
         }
     }
 </script>
