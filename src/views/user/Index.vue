@@ -24,7 +24,7 @@
                         el-form-item(label="年龄：" prop="age")
                             el-input(v-model="userInfo.age" size="mini"  placeholder="请输入年龄")
                         el-form-item(label="密码：" prop="password")
-                            el-input(v-model="userInfo.password" size="mini"  placeholder="请输入密码")
+                            el-input(v-model="userInfo.password" :disabled="dialogTitle.indexOf('编辑') > -1" size="mini" type="password" placeholder="请输入密码")
                         el-form-item(label="角色：" prop="roleId")
                             el-select(v-model="userInfo.roleId" size='mini' style="width:100%")
                                 el-option(v-for="(item, index) in roleSelectOptions" :label="item.label" :value="item.value" :key="item.value")

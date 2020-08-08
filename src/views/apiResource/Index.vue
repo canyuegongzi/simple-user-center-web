@@ -8,7 +8,7 @@
                 el-button(size="mini" type="primary"  @click="editRow('add')") 新增
                 el-button(size="mini" type="success"  @click="openSystemModule") 系统模块
                 el-button(size="mini" type="danger" @click="deleteRow('deleteRow')") 删除所选
-        el-drawer(:visible.sync="drawer"  size="70%" class="auto-drawer" @open="openDrawer" @close="closeDrawer" custom-class="custom-class" :direction="direction" :before-close="handleClose")
+        el-drawer(:visible.sync="drawer"  size="70%" class="auto-drawer"  @open="openDrawer" @close="closeDrawer" custom-class="custom-class" :direction="direction" :before-close="handleClose")
             el-scrollbar(style="height:100%;")
                 el-radio-group(v-model="drawerValue" size="mini" style="margin-left:8px" @change="getDrawerList")
                     el-radio-button(label="system") 系统列表
@@ -21,7 +21,7 @@
                         el-button(size="mini" type="primary" style="margin-left:8px" @click="getDrawerList()") 搜索
                     div(style="margin-right:8px")
                         el-button(size="mini" type="success"  @click="editRowDrawer('add')") 新增
-                el-table(:data="systemTableData" border  v-show="drawerValue == 'system'")
+                el-table(:data="systemTableData" border  v-show="drawerValue == 'system'" size="mini")
                     el-table-column(type="index" align="center" label="序号")
                     el-table-column(prop="name" align="center" label="名称")
                     el-table-column(prop="code" align="center" label="编码")
@@ -32,7 +32,7 @@
                         template( slot-scope="scope")
                             a(class="operate edit" style="color: #409eff;cursor: pointer;" @click="editRowDrawer('edit', scope.row)") 编辑
                             a(class="operate edit" style="color: #409eff;cursor: pointer;margin-left: 8px" @click="deleteRowDrawer(scope.row)") 删除
-                el-table(:data="moduleTableData" border v-show="drawerValue == 'module'")
+                el-table(:data="moduleTableData" border v-show="drawerValue == 'module'" size="mini")
                     el-table-column(type="index" align="center" label="序号")
                     el-table-column(prop="name" align="center" label="名称")
                     el-table-column(prop="code" align="center" label="编码")
@@ -67,13 +67,14 @@
             .search-items(slot="table-tools")
                 .search-item
                     el-input(v-model="query.queryStr" placeholder="请输入资源名称搜索" size="mini" suffix-icon="el-icon-search")
-                    el-select(v-model="query.system" clearable size='mini' placeholder="请选择系统")
+                    el-select(v-model="query.systemstr" clearable size='mini' placeholder="请选择系统")
                         el-option(v-for="item in systemTableData" :label="item.name" :value="item.code" :key="item.value")
                     el-button(icon="el-icon-search" type="primary" @click="getData('search')" size="mini") 搜索
-                div
-                    el-button(size="mini") 模板下载
-                    el-button(size="mini" type="success" ) 资源导入
-                    el-button(size="mini" type="primary" @click="openChartAuth") 资源架构
+                div(style="display: flex;")
+                    el-button(size="mini" @click="downLoadTemplate") 模板下载
+                    el-upload(:action="importUrl" :show-file-list="false" :headers="{token: token}" :on-success="successUpload" :file-list="fileList" style="margin-left: 8px"  :before-upload="beforeAvatarUpload")
+                        el-button(size="mini" type="success" ) 资源导入
+                    // el-button(size="mini" type="primary" @click="openChartAuth") 资源架构
             el-pagination(slot="table-pagination" @size-change="handleSizeChange" :current-page.sync="currentPage"
             :page-size="pageSize"  layout="total, sizes, prev, pager, next, jumper" :total="total")
         el-dialog(:visible.sync="dialogVisible" @close="dialogClose" width="450px")
@@ -105,11 +106,12 @@
                     vue2-org-tree(:render-content="renderContent" @on-node-click="onNodeClick" name="test" :horizontal="horizontal" :collapsable="collapsable"  @on-expand="onExpand" :data="authAllTreeData" :prop="{label: 'name', children: 'children', expand: 'expand'}")
 </template>
 
+<!--suppress TypeScriptUnresolvedVariable -->
 <script lang="ts">
     import { Vue, Prop, Watch, Emit, Component } from "vue-property-decorator";
     import BaseHeader from "@/components/table-page/BaseHeader.vue";
     import BaseTable from "@/components/table-page/BaseTable.vue";
-    import { $post, $get } from "@/utils/feth";
+    import {$post, $get, $getFile} from "@/utils/feth";
     import {authApi, systemApi, apiResourceApi} from "@/api/api";
     import { validEmail } from "@/utils/validate";
     import Rule from "@/type/Rule";
@@ -117,6 +119,8 @@
     import { confirmDelete, responseMsg } from "@/utils/response";
     import {ApiResourceDto} from "./apiResource";
     import {listToTree} from '@/utils/tree-data';
+    import {baseURL} from '@/config'
+    import {MimeStorage} from "@/utils/localStorage";
     @Component({
         components: {
             BaseHeader,
@@ -147,7 +151,7 @@
                     }
                 }),
                 {
-                    validator: (rule, value, callback, source, options) => {
+                    validator: (rule: any, value: any, callback: any, source: any, options: any) => {
                         const that = this
                         if (value != "" && value != null) {
                             $post(apiResourceApi.uniqueApi.url, {
@@ -186,6 +190,7 @@
             code: [new Rule({ message: "编码不能为空" })],
             value: [new Rule({ message: "属性不能为空" })],
         }
+        private token: any;
         public $refs!: {
             form: HTMLFormElement;
             treeSelect: any;
@@ -193,13 +198,15 @@
         public tableColumn = [
             { prop: "name", label: "名称", width: 120 },
             { prop: "code", label: "编码", width: 120 },
-            { prop: "system", label: "系统", width: 120 },
-            { prop: "module", label: "模块", width: 120 },
+            { prop: "system", label: "系统", width: 140 },
+            { prop: "module", label: "模块", width: 140 },
             { prop: "crateTime", label: "创建时间", width: 130 },
             { prop: "value", label: "属性值" },
             { prop: "desc", label: "描述" },
         ];
         public apiResourceDto = new ApiResourceDto();
+        private importUrl: string = '';
+        private fileList: any[] = [];
         public drawFormInfo = {
             name: '',
             code: '',
@@ -207,7 +214,8 @@
             system: '',
             module: '',
             desc: '',
-            type: 1
+            type: 1,
+            id: ''
         }
         public tableData = [];
         public moduleList = []; // 模块
@@ -225,6 +233,7 @@
         public query: any = {
             queryStr: "",
             system: '',
+            systemstr: '',
             querySystemStr: '',
             queryModuleStr: '',
         };
@@ -314,6 +323,7 @@
                     value: '',
                     module:'',
                     desc: '',
+                    id: '',
                     system: '',
                     type: this.drawerValue === 'system' ? 1 : 2
                 }
@@ -338,7 +348,7 @@
          * 删除抽屉
          */
         public deleteRowDrawer(data: any) {
-            const ids = data == "deleteRow" ? this.drawerSelectedRow : [data.row.id];
+            const ids = [data.id];
             if (ids.length < 1 || ids === null) {
                 this.$message({
                     message: "请先选择要删除的数据！",
@@ -346,7 +356,28 @@
                 });
                 return false;
             }
-            // confirmDelete(authApi.deleteAuth.url, this.getData, { id: ids });
+            console.log(this.drawerValue)
+            console.log(data.code)
+            if (this.drawerValue == 'system') {
+                const params = {
+                    ids: [data.id],
+                    system: data.code,
+                    type: 1
+
+                }
+                console.log(params)
+                confirmDelete(apiResourceApi.deleteApi.url, this.getDrawerList, params);
+            } else if(this.drawerValue == 'module') {
+                const params = {
+                    ids: [data.id],
+                    module: data.code,
+                    type: 2
+
+                }
+                console.log(params)
+                confirmDelete(apiResourceApi.deleteApi.url, this.getDrawerList, params);
+            }
+            //
         }
 
         /**
@@ -356,6 +387,7 @@
             this.$confirm('确认关闭？')
                 .then(_ => {
                     done();
+                    this.getData();
                 })
                 .catch(_ => {});
         }
@@ -366,7 +398,7 @@
         public async systemChange(value: string) {
             let list = []
             try {
-                const res = await $get(apiResourceApi.moduleList.url, {system: value})
+                const res: any = await $get(apiResourceApi.moduleList.url, {system: value})
                 console.log(res)
                 list = res.data.data.data
             }catch (e) {
@@ -409,6 +441,7 @@
                 name: '',
                 code: '',
                 desc: '',
+                id: '',
                 value: '',
                 module: '',
                 system: '',
@@ -459,6 +492,7 @@
                 value: '',
                 module: '',
                 system: '',
+                id: '',
                 type: this.drawerValue === 'system' ? 1 : 2
             }
            this.getDrawerList()
@@ -542,7 +576,7 @@
                 page: this.currentPage,
                 pageSize: this.pageSize,
                 name: this.query.queryStr,
-                system: this.query.system,
+                system: this.query.systemstr,
             });
             this.total = (response.data && response.data.data.count) || 0;
             this.tableData =
@@ -567,23 +601,6 @@
                 response.data && response.data.data
                     ? this.dealSystemListData(response.data.data)
                     : [];
-            return false;
-        }
-
-        /**
-         * 获取全部的功能
-         */
-        public async getAuthList() {
-            const response: any = await $get(authApi.allAuthList.url, {});
-            const treeData = response.data && response.data.data
-                ? listToTree(response.data.data.data, 'id', 'parentId', 'children')
-                : [];
-            this.authTreeData = treeData.length > 0 ? treeData : [];
-            this.authAllTreeData = {
-                id: '-1',
-                children: treeData,
-                name: '资源架构'
-            };
             return false;
         }
 
@@ -645,9 +662,9 @@
          * 弹窗确认
          */
         public async okFun() {
-            let params: any;
+            let params: any = {};
             let api: string = "";
-            const currentModule = this.moduleList.find((item:any) => {
+            const currentModule: any = this.moduleList.find((item:any) => {
                 return item.code === this.apiResourceDto.module
             })
             if (this.dialogTitle.indexOf("新增") > -1) {
@@ -668,32 +685,6 @@
             });
         }
 
-        /*private async getApiResourceDto() {
-            const res: any = await $get(authApi.getInfo.url, { id: this.authId });
-            const auth: any =
-                res.data && res.data.data ? res.data.data : new ApiResourceDto();
-            this.apiResourceDto = {
-                name: auth.name,
-                desc: auth.desc,
-                code: auth.code,
-                parentId: auth.parentId,
-                parentName: auth.parentName,
-                isRoot: (auth.parentId == -1 || auth.parentId == '-1') ? 1 : 0,
-                icon: auth.icon,
-                path: auth.path,
-                system: auth.system,
-                value: auth.value
-            };
-            this.isRootChange(this.apiResourceDto.isRoot);
-        }*/
-
-        /**
-         * 打开资源架构
-         */
-        public async openChartAuth() {
-            this.dialogChartAuth = true;
-            await this.getAuthList();
-        }
 
         private renderContent(h: any, data: any) {
             return data.name;
@@ -750,7 +741,66 @@
             console.log(data);
         }
 
+        /**
+         * 导出模板
+         */
+        private async downLoadTemplate() {
+            //
+            this.$confirm(`是否下载资源导入模板 ？`, "下载提示", {
+                confirmButtonText: "确定",
+                cancelButtonText: "取消",
+                type: "info"
+            }).then(async () => {
+                $getFile('apiResource/template/download', {})
+                    .then(data => {
+                        // @ts-ignore
+                        const url = window.URL.createObjectURL(new Blob([data], {type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"}))
+                        let a = document.createElement('a')
+                        // a.href = baseURL +  '/apiResource/template/download'
+                        a.href = url
+                        a.download = '资源导入模板'
+                        a.click()
+                    });
+
+
+            })
+        }
+
+         /**
+         * 文件导入成功
+         */
+        public async successUpload(response: any, file: any, fileList: any) {
+            if(response.data.success){
+                this.$message.success('数据导入成功')
+                this.getData()
+            } else{
+                this.$message.error('数据导入失败')
+            }
+
+        }
+
+
+        /**
+         * 文件类型校验
+         * @param file
+         * @return {boolean}
+         */
+         public beforeAvatarUpload(file: any) {
+            const ImgType = ["xls", "xlsx"]
+            const type = file.name.split('.')[1]
+            const isTrue = ImgType.includes(type)
+            if (!isTrue) {
+                this.$message.error('只支持excel类型文件上传')
+            }
+            return isTrue
+        }
+
+
         private async created() {
+            const mimeStorage = new MimeStorage();
+            const token: any = mimeStorage.getItem('token');
+            this.token = token;
+            this.importUrl = baseURL + '/apiResource/template/import'
             await this.getData();
             await this.getDrawerList();
         }

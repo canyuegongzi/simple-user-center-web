@@ -37,4 +37,28 @@ export const treeConvertList = (root) => {
     }
     return list;
 };
+/**
+ * 筛选树结构节点
+ * @param treeData {Array} 树结构数据
+ * @param filedStr {String} 筛选字段
+ * @param value {String | Number}
+ * @return {string}
+ */
+export const findTreeNode = (treeData, filedStr, value) => {
+    if (!treeData || !filedStr || !value)
+        return '';
+    let node = null;
+    const findNode = (arr) => {
+        for (let i = 0; i < arr.length; i++) {
+            if (arr[i].children && arr[i].children.length > 0) {
+                findNode(arr[i].children);
+            }
+            if (arr[i][filedStr] == value) {
+                node = arr[i];
+            }
+        }
+    };
+    findNode(treeData);
+    return node;
+};
 //# sourceMappingURL=tree-data.js.map

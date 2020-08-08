@@ -1,7 +1,7 @@
 <template lang="pug">
     .container
         base-header(title="角色中心" @editRow="editRow" @deleteRow="deleteRow")
-        base-table(:dataFormat="tableColumn" :isGiveAuth="true" @giveAuth="giveAuth" :allowDeleteData="allowDeleteData" :tableData="tableData" @editRow="editRow" @deleteRow="deleteRow" :handleSelectionChange="handleSelectionChange")
+        base-table(:dataFormat="tableColumn" :isGiveAuth="false" @giveAuth="giveAuth" :allowDeleteData="allowDeleteData" :tableData="tableData" @editRow="editRow" @deleteRow="deleteRow" :handleSelectionChange="handleSelectionChange")
             .search-items(slot="table-tools")
                 .search-item
                     el-input(v-model="query.queryStr" @blur="getData('search')"  @keyup.enter.native="getData('search')" placeholder="请输入角色名称搜索" size="mini" suffix-icon="el-icon-search")
@@ -21,19 +21,6 @@
             div(slot="footer")
                 el-button(@click="cancelFun" size="mini") 取消
                 el-button(type="primary" @click="okFun" size="mini") 确定
-        el-dialog(:visible.sync="dialogAuthVisible" @close="dialogClose" width="700px" class="auth-transfer")
-            span(slot="title") 授权
-            div(style="height: 320px;overflow: auto; padding: 0")
-                el-scrollbar(style="height:100%;")
-                    el-form(:model="authRole" :rules="authRoleRules" ref="form1" label-width="110px" class="input-width")
-                        el-form-item(label="名称：" prop="name")
-                            el-select(v-model="authRole.roleId" size='mini' filterable :disabled="true" style="width:100%" )
-                                el-option(v-for="(item, index) in roleSelectOptions" :label="item.label" :value="item.value" :key="item.value")
-                        el-form-item(label="组织人员：" prop="staffId")
-                            tree-transfer( v-if="dialogAuthVisible" pid="parentId" :to_data='authRole.toData' :from_data='authSelectOptions' :button-text="['到左边', '到右边']" :defaultProps="{key: 'id', label: 'name'}" @addBtn='add' @removeBtn='remove' height='225px' filter openAll)
-            div(slot="footer")
-                el-button(@click="cancelFun" size="mini") 取消
-                el-button(type="primary" @click="okAuthFun" size="mini") 确定
 </template>
 
 <script lang="ts">

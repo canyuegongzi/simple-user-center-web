@@ -53,9 +53,17 @@ export const roleApi = {
         method: 'post',
         url: '/role/addAuthToRole',
     },
+    addApiAuthToRole: {
+        method: 'post',
+        url: '/role/addApiAuthToRole',
+    },
     authByRole: {
         method: 'get',
         url: '/role/authByRole',
+    },
+    authApiByRole: {
+        method: 'get',
+        url: '/role/authApiByRole',
     },
 };
 export const authApi = {
@@ -82,6 +90,10 @@ export const authApi = {
     authTree: {
         method: 'get',
         url: '/authority/tree',
+    },
+    apiAuthTree: {
+        method: 'get',
+        url: '/apiResource/tree',
     },
     getInfo: {
         method: 'get',

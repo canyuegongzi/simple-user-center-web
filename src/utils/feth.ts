@@ -101,6 +101,18 @@ export const $get =  (url: any, params: any, server: any =  'wbw') => {
         });
     });
 };
+
+// 将axios 的 get 方法，绑定到 vue 实例上面的 $get
+export const $getFile =  (url: any, params: any, server: any =  'wbw') => {
+    axios.defaults.baseURL = getBaseUrl(server);
+    return new Promise((resolve, reject) => {
+        axios.get(url, { params, responseType: 'arraybuffer', }).then((res: any) => {
+            resolve(res); // 返回请求成功的数据 data
+        }).catch((err: any) => {
+            reject(err);
+        });
+    });
+};
 function getBaseUrl(name: string) {
     switch (name) {
         case 'wbw':
