@@ -1,7 +1,7 @@
 <template lang="pug">
     .container
         base-header(title="系统中心" @editRow="editRow" @deleteRow="deleteRow")
-        base-table(:dataFormat="tableColumn" :isGiveAuth="false" @giveAuth="giveAuth" :allowDeleteData="allowDeleteData" :tableData="tableData" @editRow="editRow" @deleteRow="deleteRow" :handleSelectionChange="handleSelectionChange")
+        base-table(:dataFormat="tableColumn" :isGiveAuth="false" :allowDeleteData="allowDeleteData" :tableData="tableData" @editRow="editRow" @deleteRow="deleteRow" :handleSelectionChange="handleSelectionChange")
             .search-items(slot="table-tools")
                 .search-item
                     el-input(v-model="query.queryStr" @blur="getData('search')"  @keyup.enter.native="getData('search')" placeholder="请输入系统名称搜索" size="mini" suffix-icon="el-icon-search")
@@ -13,7 +13,13 @@
                 el-scrollbar(style="height:100%;")
                     el-form(:model="systemInfo" :rules="systemInfoRules" ref="form" label-width="110px" class="input-width")
                         el-form-item(label="名称：" prop="name")
-                            el-input(v-model="systemInfo.name" :disabled="systemInfo.name == 'root'" size="mini"  placeholder="请输入名称")
+                            el-input(v-model="systemInfo.name" size="mini"  placeholder="请输入名称")
+                        el-form-item(label="编码：" prop="code")
+                            el-input(v-model="systemInfo.code" :disabled="dialogTitle.indexOf('编辑') > -1" size="mini"  placeholder="请输入系统编码")
+                        el-form-item(label="系统值：" prop="value")
+                            el-input(v-model="systemInfo.value" :disabled="dialogTitle.indexOf('编辑') > -1" size="mini"  placeholder="请输入系统值")
+                        el-form-item(label="系统属性值：" prop="attrValue")
+                            el-input(v-model="systemInfo.attrValue"  size="mini"  placeholder="请输入系统属性")
                         el-form-item(label="描述：" prop="desc")
                             el-input(v-model="systemInfo.desc" size="mini" placeholder="请输入描述" )
             div(slot="footer")
@@ -55,20 +61,22 @@ export default class System extends Vue {
       code: [
         new Rule({message: '编码不能为空'}),
       ],
-    };
-    public authRoleRules = {
       value: [
-        new Rule({message: '系统值不能为空'}),
-        new Rule({}, System.validateValue),
+          new Rule({message: '系统值不能为空'}),
       ],
+      attrValue: [
+          new Rule({message: '系统属性不能为空'}),
+      ]
     };
     public $refs!: {
       form: HTMLFormElement,
       form1: HTMLFormElement,
     };
     public  tableColumn = [
-      { prop: "name", label: "用户名称", width: 120 },
-      { prop: "value", label: "系统户值",  width: 120 },
+      { prop: "name", label: "用户名称", width: 160 },
+      { prop: "code", label: "系统编码", width: 160 },
+      { prop: "value", label: "系统值", width: 160 },
+      { prop: "attrValue", label: "系统属性" },
       { prop: "desc", label: "描述" },
     ];
     public systemInfo = new SystemInfo();
@@ -115,7 +123,9 @@ export default class System extends Vue {
         });
         return false;
       }
-      confirmDelete(systemApi.delete.url, this.getData, {id: ids});
+      $post(systemApi.delete.url, {id: ids}).then((response: any) => {
+            responseMsg(response.data.success, "删除", this.getData);
+      });
     }
 
     public add(fromData: any, toData: any, obj: any) {
@@ -251,7 +261,9 @@ export default class System extends Vue {
       this.systemInfo = {
         name: system.name,
         desc: system.desc,
-        value: system.name,
+        value: system.value,
+        code: system.code,
+        attrValue: system.attrValue
       };
     }
 

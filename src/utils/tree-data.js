@@ -50,15 +50,27 @@ export const findTreeNode = (treeData, filedStr, value) => {
     let node = null;
     const findNode = (arr) => {
         for (let i = 0; i < arr.length; i++) {
+            if (arr[i][filedStr] == value) {
+                node = arr[i];
+                throw new Error('STOP');
+            }
             if (arr[i].children && arr[i].children.length > 0) {
                 findNode(arr[i].children);
             }
-            if (arr[i][filedStr] == value) {
-                node = arr[i];
-            }
         }
     };
+    try {
+        findNode(treeData);
+    }
+    catch (e) {
+        if (e.message === 'STOP') {
+            console.log(node);
+            return node;
+        }
+    }
     findNode(treeData);
+    console.log(node);
+    console.log(treeData);
     return node;
 };
 //# sourceMappingURL=tree-data.js.map

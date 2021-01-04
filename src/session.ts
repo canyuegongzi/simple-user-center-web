@@ -1,9 +1,9 @@
 import { getRouter, route as allMenus } from './router';
 import {getURLParameters} from '@/utils/url-params';
-import Storage from '@/utils/storage';
 import { MimeStorage } from '@/utils/localStorage';
 import QS from 'query-string'
 import {domain, ENV, innerNet} from "@/config";
+import {getApiResource} from "@/utils/authApi";
 
 export const session$ = {
     token: '',
@@ -13,8 +13,10 @@ export const session$ = {
 const casBaseURL = /^(http:\/\/|https:\/\/)/.test(ENV.casDomain) ?
     ENV.casDomain :
     domain + ENV.casDomain;
+
+export const router = getRouter(allMenus);
 export const escapeCheckSession$ = () =>  {
-    return new Promise((resolve) => {
+    return new Promise(async (resolve) => {
         const mimeStorage = new MimeStorage();
         const params: any = getURLParameters(window.location.href);
         const uriSplit: any = decodeURI(location.href).split('?token=');
@@ -25,7 +27,7 @@ export const escapeCheckSession$ = () =>  {
         let sessionStorageToken: any = mimeStorage.getItem('token') || sessionStorage.getItem('token');
         const arr = location.href.split('?token');
         if (uriSplit[1]) {
-            sessionStorageToken = uriSplit[1];
+            sessionStorageToken = uriSplit[1].indexOf('#/') > -1 ? uriSplit[1].split('#/')[0]: uriSplit[1];
             mimeStorage.setItem({name: 'token', value: sessionStorageToken, expires: 120 * 60 * 1000 });
             Object.assign(session$, { token: sessionStorageToken });
             location.href = uriSplit[0];
@@ -36,10 +38,13 @@ export const escapeCheckSession$ = () =>  {
             window.location.href = casBaseURL + '?redirectUrl=' + url;
         }
         const token = sessionStorageToken;
+        const apiUrl: string[] = await getApiResource(token);
+        // @ts-ignore
+        window.__BSPAPIRESURCE__ = Object.freeze(apiUrl);
         Object.assign(session$, { hideMenus: hideMenus === 'true' });
         Object.assign(session$, { token });
         mimeStorage.setItem({name: 'token', value: sessionStorageToken, expires: 120 * 60 * 1000 });
-        resolve(getRouter(allMenus));
+        resolve(router);
         Object.assign(session$, { menus: allMenus });
     });
 };

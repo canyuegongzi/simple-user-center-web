@@ -91,13 +91,13 @@ export default class Auth extends Vue {
     treeSelect: any;
   };
   public tableColumn = [
-    { prop: "name", label: "名称", width: 120 },
-    { prop: "code", label: "编码", width: 120 },
-    { prop: "system", label: "系统", width: 120 },
+    { prop: "name", label: "名称", width: 160 },
+    { prop: "code", label: "编码", width: 200 },
+    { prop: "system", label: "系统", width: 160 },
     { prop: "path", label: "地址" },
     { prop: "icon", label: "图标" },
     { prop: "desc", label: "描述" },
-    { prop: "parentName", label: "上级菜单" },
+    // { prop: "parentName", label: "上级菜单" },
   ];
   public authInfo = new AuthInfo();
   public tableData = [];
@@ -185,7 +185,9 @@ export default class Auth extends Vue {
       });
       return false;
     }
-    confirmDelete(authApi.deleteAuth.url, this.getData, { id: ids });
+    $post(authApi.deleteAuth.url,{ id: ids }).then((response: any) => {
+        responseMsg(response.data.success, "删除", this.getData);
+    });
   }
 
   /**

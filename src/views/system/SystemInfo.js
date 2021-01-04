@@ -4,6 +4,8 @@ export default class SystemInfo {
         this.id = '';
         this.desc = '';
         this.value = '';
+        this.code = '';
+        this.attrValue = '';
     }
 }
 //# sourceMappingURL=SystemInfo.js.map

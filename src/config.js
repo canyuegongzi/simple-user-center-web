@@ -10,9 +10,9 @@ else {
     domain = location.protocol + '//' + location.host;
 }
 // 基础地址
-const baseURL = /^(http:\/\/|https:\/\/)/.test(ENV.wgmsBaseWeb) ?
-    ENV.wgmsBaseWeb :
-    domain + ENV.wgmsBaseWeb;
+const baseURL = /^(http:\/\/|https:\/\/)/.test(ENV.userBaseWeb) ?
+    ENV.userBaseWeb :
+    domain + ENV.userBaseWeb;
 // 基础地址
 const pushURL = /^(http:\/\/|https:\/\/)/.test(ENV.pushBaseWeb) ?
     ENV.pushBaseWeb :

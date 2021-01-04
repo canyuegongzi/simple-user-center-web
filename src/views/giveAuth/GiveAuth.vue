@@ -29,7 +29,7 @@
  import {confirmDelete, responseMsg} from '@/utils/response';
  import RoleInfo from '@/views/role/Role';
  import AuthInfo from '@/views/auth/Auth';
- import {findTreeNode, listToTree} from '@/utils/tree-data';
+ import {findTreeNode, listToTree, treeConvertList} from '@/utils/tree-data';
  import AuthRole from '@/views/role/AuthRole';
 
  @Component({
@@ -87,6 +87,7 @@
      public roleSelectOptions: SelectOption[] = [];
      public authSelectOptions: SelectOption[] = [];
      public apiAuthSelectOptions: SelectOption[] = [];
+     public apiAuthSelectOptionsList: SelectOption[] = [];
      public roleId: any = '';
      public authTypeValue: string = 'menus';
 
@@ -204,8 +205,8 @@
       */
      public async getRoleList() {
          const response: any = await $get(roleApi.allRoleList.url, {});
-         this.roleSelectOptions = response.data && response.data.data ?
-             this.dealRoleListData(response.data.data) :
+         this.roleSelectOptions = response.data ?
+             this.dealRoleListData(response.data) :
              [];
          return false;
      }
@@ -226,11 +227,16 @@
       * 获取全部的功能(菜单)
       */
      public async getAuthApiList() {
-         const response: any = await $get(authApi.apiAuthTree.url, {});
+         const response: any = await $get(authApi.apiAuthTree.url, {hasList: false});
          this.apiAuthSelectOptions =
              response.data && response.data.data
                  ? response.data.data.data
                  : [];
+         let list: any = [];
+         for (let i = 0; i < this.apiAuthSelectOptions.length; i++ ) {
+             list = list.concat(treeConvertList(this.apiAuthSelectOptions[i]))
+         }
+         this.apiAuthSelectOptionsList = list;
          return false;
      }
 
@@ -343,7 +349,7 @@
      private async getAuthRoleInfo() {
          this.defaultCheckedKeys1 = []
          const res: any = await $get(roleApi.authByRole.url, { id: this.authRole.roleId });
-         const authListByRole: AuthInfo[] = res.data && res.data.data ? res.data.data.data[0].authority : [];
+         const authListByRole: AuthInfo[] = res.data && res.data.data ? res.data.data[0].authority : [];
          this.authRole.tempIds = [];
          await this.getAuthList();
          authListByRole.forEach((item: AuthInfo) => {
@@ -360,11 +366,12 @@
          const res: any = await $get(roleApi.authApiByRole.url, { id: this.authRole.roleId });
          console.log(res)
          await this.getAuthApiList();
-         this.authRole.tempIds = res.data.data
-         this.defaultCheckedKeys = res.data.data
+         this.authRole.tempIds = res.data
+         this.defaultCheckedKeys = res.data
      }
 
      private async okAuthFun() {
+         console.log(this.authRole)
          this.$refs.form1.validate(async (valid: boolean) => {
              if (!valid)  {
                  return false;
@@ -379,14 +386,16 @@
                                  ? this.authRole.tempIds :
                                  []});
                      responseMsg(
-                         res.data.success,
+                         res.success,
                          '授权成功',
                          this.cancelFun,
                      );
                  } else {
                      const authIds: any[] = []
                      this.authRole.tempIds.forEach((item: any) => {
-                         const currentNode: any = findTreeNode(this.apiAuthSelectOptions, 'id', item);
+                         const currentNode: any = this.apiAuthSelectOptionsList.find((s: any) => {
+                             return s.id == item
+                         });
                          if (currentNode && currentNode.type === 3) {
                              authIds.push(currentNode.id)
                          }
@@ -394,9 +403,9 @@
                      const res: any = await $post(roleApi.addApiAuthToRole.url,
                          {roleId: this.authRole.roleId, resourceIds: authIds.length > 0
                                  ? authIds :
-                                 []});
+                                 []}, 'wbw');
                      responseMsg(
-                         res.data.success,
+                         res.success,
                          '授权成功',
                          this.cancelFun,
                      );

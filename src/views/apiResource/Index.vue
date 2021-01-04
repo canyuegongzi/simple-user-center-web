@@ -521,7 +521,9 @@
                 });
                 return false;
             }
-            confirmDelete(apiResourceApi.deleteApi.url, this.getData, { ids: ids, type: 3 });
+            $post(apiResourceApi.deleteApi.url,{ ids: ids, type: 3 }).then((response: any) => {
+                responseMsg(response.data.success, "删除", this.getData);
+            });
         }
 
         /**
@@ -811,7 +813,7 @@
     .header
         padding 0 0 0 8px
     .custom-class
-        >>>#el-drawer__header
+        >>>.el-drawer__header
                 margin-bottom 0
                 height 0
 </style>

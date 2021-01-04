@@ -2,6 +2,7 @@
  * @author fei_yong
  * @date 2019-09-27 23:47
  */
+const { name } = require('./package');
 const webpack = require('webpack')
 module.exports = {
     publicPath: process.env.NODE_ENV == 'production' ? 'http://canyuegongzi.xyz/simple-user-center-web/' : './',
@@ -17,7 +18,7 @@ module.exports = {
             template: 'public/index.html', // 模板来源
             filename: 'index.html', // 在 dist/index.html 的输出
             title: 'Index Page', // 当使用 title 选项时,在 template 中使用：<title><%= htmlWebpackPlugin.options.title %></title>
-            chunks: ['chunk-vendors', 'chunk-common', 'index'] // 在这个页面中包含的块，默认情况下会包含,提取出来的通用 chunk 和 vendor chunk
+            // chunks: ['chunk-vendors', 'chunk-common', 'index'] // 在这个页面中包含的块，默认情况下会包含,提取出来的通用 chunk 和 vendor chunk
         }
     },
     configureWebpack: {
@@ -33,18 +34,24 @@ module.exports = {
             }
         },
         plugins: [
-            new webpack.DllReferencePlugin({
-                context: process.cwd(),
-                manifest: require('./public/vendor/vendor-manifest.json')
-            })
+            //new webpack.DllReferencePlugin({
+            //    context: process.cwd(),
+            //    manifest: require('./public/vendor/vendor-manifest.json')
+            //})
         ],
         output: {
+            library: '[name]',
+            filename: '[name].js',
+            libraryTarget: 'umd',
+            // library: 'simple-user-center-web',
+            // libraryTarget: 'umd',// 把子应用打包成 umd 库格式
+            // jsonpFunction: 'webpackJsonp_simple-user-center-web',
             // 微应用的包名，这里与主应用中注册的微应用名称一致
-            library: "userSystem",
+            // library: "userSystem",
             // 将你的 library 暴露为所有的模块定义下都可运行的方式
-            libraryTarget: "umd",
+            // libraryTarget: "umd",
             // 按需加载相关，设置为 webpackJsonp_VueMicroApp 即可
-            jsonpFunction: `webpackJsonp_userSystem`,
+            // jsonpFunction: `webpackJsonp_userSystem`,
         },
     },
     lintOnSave: true, // 是否在保存的时候检查
@@ -62,7 +69,7 @@ module.exports = {
         disableHostCheck: true,
         // 配置跨域请求头，解决开发环境的跨域问题
         headers: {
-            "Access-Control-Allow-Origin": "*",
+            'Access-Control-Allow-Origin': '*',
         },
     },
     pluginOptions: {

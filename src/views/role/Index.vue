@@ -176,7 +176,7 @@ export default class Role extends Vue {
         name: this.query.queryStr,
       });
       this.total = response.data && response.data.data.count || 0;
-      this.tableData = response.data && response.data.data ?  response.data.data.data : [];
+      this.tableData = response.data && response.data.data ?  response.data.data : [];
       const totalPageNumber = Math.ceil(this.total / this.pageSize);
       if (totalPageNumber < this.currentPage && this.total !== 0) {
         this.currentPage = totalPageNumber;
@@ -297,7 +297,7 @@ export default class Role extends Vue {
         }
         const res: any = await $post(api, params);
         responseMsg(
-          res.data.success,
+          res.success,
           this.dialogTitle,
           this.cancelFun,
         );
@@ -306,7 +306,7 @@ export default class Role extends Vue {
 
     private async getRoleInfo() {
       const res: any = await $get(roleApi.getInfo.url, { id: this.roleId });
-      const role: any = res.data && res.data.data ? res.data.data : new RoleInfo();
+      const role: any = res.data ? res.data : new RoleInfo();
       this.roleInfo = {
         name: role.name,
         desc: role.desc,
@@ -337,7 +337,7 @@ export default class Role extends Vue {
               ? this.authRole.tempIds :
               []});
         responseMsg(
-          res.data.success,
+          res.success,
           this.dialogTitle,
           this.cancelFun,
         );

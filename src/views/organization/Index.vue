@@ -40,7 +40,7 @@
                     vue2-org-tree(:render-content="renderContent" @on-node-click="onNodeClick" name="test" :horizontal="horizontal" :collapsable="collapsable"  @on-expand="onExpand" :data="orgAllTreeData" :prop="{label: 'name', children: 'children', expand: 'expand'}")
         el-dialog(:visible.sync="dialogUserVisible" @close="dialogClose" width="700px" class="auth-transfer")
             span(slot="title") 成员
-            div(style="height: 320px;overflow: auto; padding: 0")
+            div(style="height: 400px;overflow: auto; padding: 0")
                 el-scrollbar(style="height:100%;")
                     el-form(:model="organUser" :rules="organUserRules" ref="form1" label-width="110px" class="input-width")
                         el-form-item(label="名称：" prop="name")
@@ -189,7 +189,9 @@ export default class Organization extends Vue {
       return false;
     }
     console.log(ids);
-    confirmDelete(organizationApi.delete.url, this.getData, { id: ids, isDeleteChild: 1 });
+    $post(organizationApi.delete.url, {id: ids, isDeleteChild: 1}).then((response: any) => {
+        responseMsg(response.data.success, "删除", this.getData);
+    });
   }
 
   /**

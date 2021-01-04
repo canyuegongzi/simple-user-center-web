@@ -105,6 +105,7 @@
       { prop: "address", label: "地址" },
       { prop: "ors", label: "所属组织" },
       { prop: "roleName", label: "角色" },
+      { prop: "verificationLabel", label: "是否验证" },
     ];
     public userInfo = new UserInfo();
     public tableData = [];
@@ -237,7 +238,7 @@
      */
     public async getRoleList() {
       const response: any = await $get(roleApi.allRoleList.url, {});
-      this.roleSelectOptions = response.data && response.data.data ?  this.dealRoleListData(response.data.data) : [];
+      this.roleSelectOptions = response.data && response.data ?  this.dealRoleListData(response.data) : [];
       return false;
     }
 
@@ -267,6 +268,7 @@
       res.forEach((item: any) => {
         item.ors = dealName(item.organizations).join(',');
         item.roleName = item.role.name;
+        item.verificationLabel = item.verification ? '是' : '否';
       });
       return res;
     }

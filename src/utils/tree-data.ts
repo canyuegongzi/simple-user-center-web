@@ -46,19 +46,30 @@ export const treeConvertList = (root: any) =>  {
  * @param value {String | Number}
  * @return {string}
  */
-export const findTreeNode = (treeData: any[], filedStr: any, value: any) =>{
+export const findTreeNode = (treeData: any[], filedStr: 'id', value: any) =>{
     if (!treeData || !filedStr || !value) return ''
     let node = null
     const findNode = (arr: any[]) => {
         for (let i = 0; i < arr.length; i++) {
+            if (arr[i][filedStr] == value) {
+                node = arr[i];
+                throw new Error('STOP');
+            }
             if (arr[i].children && arr[i].children.length > 0) {
                 findNode(arr[i].children)
             }
-            if (arr[i][filedStr] == value) {
-                node = arr[i]
-            }
+        }
+    }
+    try {
+        findNode(treeData)
+    }catch (e) {
+        if (e.message === 'STOP') {
+            console.log(node)
+            return node
         }
     }
     findNode(treeData)
+    console.log(node)
+    console.log(treeData)
     return node
 }
