@@ -217,8 +217,8 @@
      public async getAuthList() {
          const response: any = await $get(authApi.authTree.url, {});
          this.authSelectOptions =
-             response.data && response.data.res
-                 ? response.data.res.data
+             response.data && response.data.data
+                 ? response.data.data
                  : [];
          return false;
      }

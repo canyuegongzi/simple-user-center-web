@@ -35,9 +35,9 @@
                 el-button(type="primary" @click="okFun" size="mini") 确定
         el-dialog(:visible.sync="dialogChartAuth" fullscreen @close="dialogClose" width="800px")
             span(slot="title") 组织架构
-            div(style="overflow: auto; padding: 0")
+            div(style="overflow: auto; padding: 0;")
                 el-scrollbar(style="height:100%;")
-                    vue2-org-tree(:render-content="renderContent" @on-node-click="onNodeClick" name="test" :horizontal="horizontal" :collapsable="collapsable"  @on-expand="onExpand" :data="orgAllTreeData" :prop="{label: 'name', children: 'children', expand: 'expand'}")
+                    vue2-org-tree(:render-content="renderContent" @on-node-click="onNodeClick" name="test" :horizontal="true" :collapsable="collapsable"  @on-expand="onExpand" :data="orgAllTreeData" :props="{label: 'name', children: 'children', expand: 'expand'}")
         el-dialog(:visible.sync="dialogUserVisible" @close="dialogClose" width="700px" class="auth-transfer")
             span(slot="title") 成员
             div(style="height: 400px;overflow: auto; padding: 0")
@@ -46,7 +46,7 @@
                         el-form-item(label="名称：" prop="name")
                             el-select(v-model="organUser.orId" size='mini' filterable :disabled="true" style="width:100%" )
                                 el-option(v-for="(item, index) in organizationSelectOptions" :label="item.label" :value="item.value" :key="item.value")
-                        el-form-item(label="系统人员：" prop="userId")
+                        el-form-item(label="系统人员：" prop="userId" style="line-height: 0" class="person-item")
                             el-transfer(filterable filter-placeholder="请输入系统人员名称" :titles="['候选人员', '已选人员']" v-model="organUser.userId" :data="userSelectOptions" :props="{key: 'value',label: 'label'}")
             div(slot="footer")
                 el-button(@click="cancelFun" size="mini") 取消
@@ -270,7 +270,7 @@ export default class Organization extends Vue {
     const response: any = await $get(userApi.allUserLit.url, {});
     this.userSelectOptions =
       response.data && response.data.data
-        ? this.dealUserListData(response.data.data.data)
+        ? this.dealUserListData(response.data.data)
         : [];
     return false;
   }
@@ -293,6 +293,7 @@ export default class Organization extends Vue {
       children: treeData,
       name: '组织架构'
     };
+    console.log(this.orgAllTreeData)
     return false;
   }
 
@@ -525,4 +526,7 @@ export default class Organization extends Vue {
     .auth-transfer
         >>>.el-dialog
                 width 800px !important
+    .person-item
+        >>>.el-form-item__content
+                line-height 0 !important
 </style>

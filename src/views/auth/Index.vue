@@ -45,7 +45,7 @@
             span(slot="title") 资源架构
             div(style="overflow: auto; padding: 0")
                 el-scrollbar(style="height:100%;")
-                    vue2-org-tree(:render-content="renderContent" @on-node-click="onNodeClick" name="test" :horizontal="horizontal" :collapsable="collapsable"  @on-expand="onExpand" :data="authAllTreeData" :prop="{label: 'name', children: 'children', expand: 'expand'}")
+                    vue2-org-tree(:render-content="renderContent" @on-node-click="onNodeClick" name="test" :horizontal="false" :collapsable="collapsable"  @on-expand="onExpand" :data="authAllTreeData" :props="{label: 'name', children: 'children', expand: 'expand'}")
 </template>
 
 <script lang="ts">
@@ -186,7 +186,7 @@ export default class Auth extends Vue {
       return false;
     }
     $post(authApi.deleteAuth.url,{ id: ids }).then((response: any) => {
-        responseMsg(response.data.success, "删除", this.getData);
+        responseMsg(response.success, "删除", this.getData);
     });
   }
 
@@ -244,9 +244,9 @@ export default class Auth extends Vue {
       name: this.query.queryStr,
       system: this.query.system,
     });
-    this.total = (response.data && response.data.data.count) || 0;
+    this.total = (response.data && response.data.count) || 0;
     this.tableData =
-      response.data && response.data.data ? response.data.data.data : [];
+      response.data && response.data.data ? response.data.data : [];
     await this.getAuthList();
     const totalPageNumber = Math.ceil(this.total / this.pageSize);
     if (totalPageNumber < this.currentPage && this.total !== 0) {
@@ -264,9 +264,10 @@ export default class Auth extends Vue {
    */
   public async getSystemList() {
     const response: any = await $get(systemApi.all.url, {});
+    console.log(response)
     this.systemSelectOptions =
-      response.data && response.data.data
-        ? this.dealSystemListData(response.data.data)
+      response.data && response.data
+        ? this.dealSystemListData(response.data)
         : [];
     return false;
   }
@@ -277,7 +278,7 @@ export default class Auth extends Vue {
   public async getAuthList() {
     const response: any = await $get(authApi.allAuthList.url, {});
     const treeData = response.data && response.data.data
-    ? listToTree(response.data.data.data, 'id', 'parentId', 'children')
+    ? listToTree(response.data.data, 'id', 'parentId', 'children')
     : [];
     this.authTreeData = treeData.length > 0 ? treeData : [];
     this.authAllTreeData = {
@@ -361,14 +362,14 @@ export default class Auth extends Vue {
         return false;
       }
       const res: any = await $post(api, params);
-      responseMsg(res.data.success, this.dialogTitle, this.cancelFun);
+      responseMsg(res.success, this.dialogTitle, this.cancelFun);
     });
   }
 
   private async getAuthInfo() {
     const res: any = await $get(authApi.getInfo.url, { id: this.authId });
     const auth: any =
-      res.data && res.data.data ? res.data.data : new AuthInfo();
+      res.data && res.data ? res.data : new AuthInfo();
     this.authInfo = {
       name: auth.name,
       desc: auth.desc,

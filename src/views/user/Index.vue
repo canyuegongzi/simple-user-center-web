@@ -219,8 +219,8 @@
         email: this.query.queryEmail,
         roleId: this.query.roleId
       });
-      this.total = response.data && response.data.data.count || 0;
-      this.tableData = response.data && response.data.data ?  this.dealTableData(response.data.data.data) : [];
+      this.total = response.data && response.data.count || 0;
+      this.tableData = response.data && response.data.data ?  this.dealTableData(response.data.data) : [];
       await this.getRoleList();
       const totalPageNumber = Math.ceil(this.total / this.pageSize);
       if (totalPageNumber < this.currentPage && this.total !== 0) {
@@ -334,7 +334,7 @@
             return false;
           }
           const res: any = await $post(api, params);
-          if (res.data.success) {
+          if (res.success) {
             this.$message({
               type: 'success',
               message: '操作成功',
@@ -342,7 +342,7 @@
           } else {
             this.$message({
               type: 'error',
-              message: res.data.message,
+              message: res.message,
             });
           }
           await this.cancelFun();
@@ -351,7 +351,7 @@
 
     private async getUserInfo() {
       const res: any = await $get(userApi.getInfo.url, { id: this.userId });
-      const user: any = res.data && res.data.data ? res.data.data : new UserInfo();
+      const user: any = res.data ? res.data : new UserInfo();
       console.log(user);
       this.userInfo = {
         name: user.name,

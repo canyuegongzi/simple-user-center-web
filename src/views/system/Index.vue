@@ -124,7 +124,7 @@ export default class System extends Vue {
         return false;
       }
       $post(systemApi.delete.url, {id: ids}).then((response: any) => {
-            responseMsg(response.data.success, "删除", this.getData);
+            responseMsg(response.success, "删除", this.getData);
       });
     }
 
@@ -174,8 +174,8 @@ export default class System extends Vue {
         pageSize: this.pageSize,
         name: this.query.queryStr,
       });
-      this.total = response.data && response.data.data.count || 0;
-      this.tableData = response.data && response.data.data ?  response.data.data.data : [];
+      this.total = response.data && response.data.count || 0;
+      this.tableData = response.data ?  response.data.data : [];
       const totalPageNumber = Math.ceil(this.total / this.pageSize);
       if (totalPageNumber < this.currentPage && this.total !== 0) {
         this.currentPage = totalPageNumber;
@@ -248,7 +248,7 @@ export default class System extends Vue {
         }
         const res: any = await $post(api, params);
         responseMsg(
-          res.data.success,
+          res.success,
           this.dialogTitle,
           this.cancelFun,
         );
@@ -257,7 +257,7 @@ export default class System extends Vue {
 
     private async getSystemInfo() {
       const res: any = await $get(systemApi.info.url, { id: this.roleId });
-      const system: SystemInfo = res.data && res.data.data ? res.data.data : new SystemInfo();
+      const system: SystemInfo = res.data && res.data ? res.data : new SystemInfo();
       this.systemInfo = {
         name: system.name,
         desc: system.desc,

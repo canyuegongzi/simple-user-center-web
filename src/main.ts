@@ -12,7 +12,8 @@ import 'element-ui/lib/theme-chalk/index.css';
 import { global } from './utils/mixin';
 import treeTransfer from 'el-tree-transfer';
 import ElTreeSelect from 'el-tree-select';
-import Vue2OrgTree from 'vue2-org-tree';
+import Vue2OrgTree from 'vue2-org-tree'
+import 'vue2-org-tree/dist/style.css'
 import iconPicker from 'vue-fontawesome-elementui-icon-picker';
 // @ts-ignore
 Vue.use(iconPicker);

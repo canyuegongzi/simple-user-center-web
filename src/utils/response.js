@@ -30,7 +30,7 @@ export function confirmDelete(path, callback, params, server) {
         console.log(params);
         Vue.prototype.$post(path, params, server).then((response) => {
             console.log(response);
-            responseMsg(response.success, "删除", callback);
+            responseMsg((response.success) || (response.data.success), "删除", callback);
         });
     }).catch(() => { });
 }

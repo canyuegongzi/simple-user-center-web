@@ -21,7 +21,7 @@
                         el-button(size="mini" type="primary" style="margin-left:8px" @click="getDrawerList()") 搜索
                     div(style="margin-right:8px")
                         el-button(size="mini" type="success"  @click="editRowDrawer('add')") 新增
-                el-table(:data="systemTableData" border  v-show="drawerValue == 'system'" size="mini")
+                el-table(:data="systemTableData" :max-height="innerTableHeight +''" border  v-show="drawerValue == 'system'" size="mini")
                     el-table-column(type="index" align="center" label="序号")
                     el-table-column(prop="name" align="center" label="名称")
                     el-table-column(prop="code" align="center" label="编码")
@@ -32,7 +32,7 @@
                         template( slot-scope="scope")
                             a(class="operate edit" style="color: #409eff;cursor: pointer;" @click="editRowDrawer('edit', scope.row)") 编辑
                             a(class="operate edit" style="color: #409eff;cursor: pointer;margin-left: 8px" @click="deleteRowDrawer(scope.row)") 删除
-                el-table(:data="moduleTableData" border v-show="drawerValue == 'module'" size="mini")
+                el-table(:data="moduleTableData" :max-height="innerTableHeight +''" border v-show="drawerValue == 'module'" size="mini")
                     el-table-column(type="index" align="center" label="序号")
                     el-table-column(prop="name" align="center" label="名称")
                     el-table-column(prop="code" align="center" label="编码")
@@ -206,6 +206,7 @@
         ];
         public apiResourceDto = new ApiResourceDto();
         private importUrl: string = '';
+        public innerTableHeight: string = '600';
         private fileList: any[] = [];
         public drawFormInfo = {
             name: '',
@@ -356,8 +357,6 @@
                 });
                 return false;
             }
-            console.log(this.drawerValue)
-            console.log(data.code)
             if (this.drawerValue == 'system') {
                 const params = {
                     ids: [data.id],
@@ -367,7 +366,9 @@
                 }
                 console.log(params)
                 confirmDelete(apiResourceApi.deleteApi.url, this.getDrawerList, params);
-            } else if(this.drawerValue == 'module') {
+                return
+            }
+            if(this.drawerValue == 'module') {
                 const params = {
                     ids: [data.id],
                     module: data.code,
@@ -377,7 +378,6 @@
                 console.log(params)
                 confirmDelete(apiResourceApi.deleteApi.url, this.getDrawerList, params);
             }
-            //
         }
 
         /**
@@ -805,7 +805,9 @@
             this.importUrl = baseURL + '/apiResource/template/import'
             await this.getData();
             await this.getDrawerList();
+            this.innerTableHeight = document.body.clientHeight - 130 + ''
         }
+
     }
 </script>
 
