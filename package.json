@@ -20,7 +20,7 @@
     "json-loader": "^0.5.7",
     "moment": "^2.27.0",
     "query-string": "^6.8.3",
-    "ua-parser-js": "^0.7.20",
+    "ua-parser-js": "^0.7.24",
     "vue": "^2.6.10",
     "vue-fontawesome-elementui-icon-picker": "^0.1.9",
     "vue-router": "^3.0.3",
