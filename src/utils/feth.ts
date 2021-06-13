@@ -39,9 +39,8 @@ axios.interceptors.request.use((config: any) => {
 }, (error: any) => {
     return Promise.reject(error);
 });
-const casBaseURL = /^(http:\/\/|https:\/\/)/.test(ENV.casDomain) ?
-    ENV.casDomain :
-    domain + ENV.casDomain;
+// @ts-ignore
+const casBaseURL =  window.USERENV.casDomain
 // 请求到结果的拦截处理
 axios.interceptors.response.use( (config: any) => {
     if (config.data && config.data.code && config.data.code == 30000) {
@@ -108,7 +107,8 @@ export const $getFile =  (url: any, params: any, server: any =  'wbw') => {
  */
 const alowFeth = (verificationUrl: string) => {
     return new Promise(((resolve, reject) => {
-        const flag = uniqueFethUrl(verificationUrl);
+        // const flag = uniqueFethUrl(verificationUrl);
+        const flag = true;
         console.log(verificationUrl)
         resolve(flag);
     }))

@@ -2,9 +2,8 @@ import Vue from 'vue';
 import axios from 'axios';
 // @ts-ignore
 import qs from 'qs';
-import { baseURL, domain, ENV, pushURL } from "../config";
+import { baseURL, pushURL } from "../config";
 import { MimeStorage } from "@/utils/localStorage";
-import { uniqueFethUrl } from "@/utils/authApi";
 // 取消请求
 const CancelToken = axios.CancelToken;
 // 是否需要拦截code==-1的状态
@@ -35,9 +34,8 @@ axios.interceptors.request.use((config) => {
 }, (error) => {
     return Promise.reject(error);
 });
-const casBaseURL = /^(http:\/\/|https:\/\/)/.test(ENV.casDomain) ?
-    ENV.casDomain :
-    domain + ENV.casDomain;
+// @ts-ignore
+const casBaseURL = window.USERENV.casDomain;
 // 请求到结果的拦截处理
 axios.interceptors.response.use((config) => {
     if (config.data && config.data.code && config.data.code == 30000) {
@@ -103,7 +101,8 @@ export const $getFile = (url, params, server = 'wbw') => {
  */
 const alowFeth = (verificationUrl) => {
     return new Promise(((resolve, reject) => {
-        const flag = uniqueFethUrl(verificationUrl);
+        // const flag = uniqueFethUrl(verificationUrl);
+        const flag = true;
         console.log(verificationUrl);
         resolve(flag);
     }));

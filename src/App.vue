@@ -33,8 +33,8 @@
     public async getUserInfo() {
         try {
             const res: any = await $post('/user/findUserToken', {token: this.token})
-            Vue.prototype._user = res.data.data
-            Vue.prototype.user = res.data.data
+            Vue.prototype._user = res.data
+            Vue.prototype.user = res.data
         }catch (e) {
             console.log(e);
         }

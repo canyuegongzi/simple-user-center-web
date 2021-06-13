@@ -10,9 +10,8 @@ export const session$ = {
     menus: [],
     hideMenus: false,
 };
-const casBaseURL = /^(http:\/\/|https:\/\/)/.test(ENV.casDomain) ?
-    ENV.casDomain :
-    domain + ENV.casDomain;
+// @ts-ignore
+const casBaseURL = window.USERENV.casDomain
 
 export const router = getRouter(allMenus);
 export const escapeCheckSession$ = () =>  {
@@ -33,9 +32,12 @@ export const escapeCheckSession$ = () =>  {
             location.href = uriSplit[0];
         }
         if (sessionStorageToken === "null" || !sessionStorageToken) {
+            debugger
             const url = location.origin + location.pathname;
+            const sss = casBaseURL + '?redirectUrl=' + url;
+            console.log(sss)
             // @ts-ignore
-            window.location.href = casBaseURL + '?redirectUrl=' + url;
+            window.location.href = sss
         }
         const token = sessionStorageToken;
         const apiUrl: string[] = await getApiResource(token);

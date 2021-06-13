@@ -5,7 +5,7 @@
 const { name } = require('./package');
 const webpack = require('webpack')
 module.exports = {
-    publicPath: process.env.NODE_ENV == 'production' ? 'http://canyuegongzi.xyz/simple-user-center-web/' : './',
+    publicPath: process.env.NODE_ENV == 'production' ? 'http://148.70.150.131:8040/simple-user-center-web/' : './',
     // publicPath: './', // 部署应用时的根路径(默认'/'),也可用相对路径(存在使用限制)
     outputDir: 'dist', // 运行时生成的生产环境构建文件的目录(默认''dist''，构建之前会被清除)
     assetsDir: 'public', //放置生成的静态资源(s、css、img、fonts)的(相对于 outputDir 的)目录(默认'')

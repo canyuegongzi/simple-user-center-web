@@ -73,7 +73,7 @@ export default class System extends Vue {
       form1: HTMLFormElement,
     };
     public  tableColumn = [
-      { prop: "name", label: "用户名称", width: 160 },
+      { prop: "name", label: "名称", width: 160 },
       { prop: "code", label: "系统编码", width: 160 },
       { prop: "value", label: "系统值", width: 160 },
       { prop: "attrValue", label: "系统属性" },

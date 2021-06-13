@@ -2,16 +2,14 @@ import { getRouter, route as allMenus } from './router';
 import { getURLParameters } from '@/utils/url-params';
 import { MimeStorage } from '@/utils/localStorage';
 import QS from 'query-string';
-import { domain, ENV } from "@/config";
 import { getApiResource } from "@/utils/authApi";
 export const session$ = {
     token: '',
     menus: [],
     hideMenus: false,
 };
-const casBaseURL = /^(http:\/\/|https:\/\/)/.test(ENV.casDomain) ?
-    ENV.casDomain :
-    domain + ENV.casDomain;
+// @ts-ignore
+const casBaseURL = window.USERENV.casDomain;
 export const router = getRouter(allMenus);
 export const escapeCheckSession$ = () => {
     return new Promise(async (resolve) => {
@@ -31,9 +29,12 @@ export const escapeCheckSession$ = () => {
             location.href = uriSplit[0];
         }
         if (sessionStorageToken === "null" || !sessionStorageToken) {
+            debugger;
             const url = location.origin + location.pathname;
+            const sss = casBaseURL + '?redirectUrl=' + url;
+            console.log(sss);
             // @ts-ignore
-            window.location.href = casBaseURL + '?redirectUrl=' + url;
+            window.location.href = sss;
         }
         const token = sessionStorageToken;
         const apiUrl = await getApiResource(token);

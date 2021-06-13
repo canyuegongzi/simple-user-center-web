@@ -17,7 +17,7 @@ export const getUserInfo = async (token: string) => {
         // getUserInfo
         const res: any = await $post('/user/findUserToken', {token:token}, 'scus');
         console.log(res)
-        user =  { ...res.data.data};
+        user =  { ...res.data};
         console.log(user);
     }catch (e) {
         console.log(e);
